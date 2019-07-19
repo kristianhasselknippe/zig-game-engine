@@ -15,17 +15,16 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
 }
 
 fn Vec3(comptime T: type) type {
-    return packed struct {
+    return struct {
         x: T,
         y: T,
-        z: T,
+        z: T
     };
 }
 
 const Vertex = Vec3(f32);
 
-pub fn init() void {
-    const data = [_]Vertex{
+const data = [_]Vertex{
         Vertex { .x = -1.0, .y = -1.0, .z = 0.0 },
         Vertex { .x = 1.0, .y = -1.0, .z = 0.0 },
         Vertex { .x = 0.0, .y = 1.0, .z = 0.0 }
@@ -35,6 +34,8 @@ pub fn init() void {
         0,1,2,0,2,3
     };
 
+pub fn init() void {
+
     var vao: c.GLuint = undefined;
     c.glGenVertexArrays(1, &vao);
     c.glBindVertexArray(vao);
@@ -42,17 +43,28 @@ pub fn init() void {
     var vbo: c.GLuint = undefined;
     c.glGenBuffers(1, &vbo);
     c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
-    c.glBufferData(c.GL_ARRAY_BUFFER, 4 * data.len, &data[0], c.GL_STATIC_DRAW);
 
+    c.glBufferData(c.GL_ARRAY_BUFFER, 4 * data.len, &data[0], c.GL_STATIC_DRAW);
     var ebo: c.GLuint = undefined;
     c.glGenBuffers(1, &ebo);
     c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ebo);
-    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, 4 * indices.len, &indices[0], c.GL_STATIC_DRAW);
+    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER,  4 * indices.len, &indices[0], c.GL_STATIC_DRAW);
+}
 
+pub fn createVertexShader(shaderData: [*]const u8) void {
+    const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
+    c.glShaderSource(shader, 1, &shaderData, null);
+    c.glCompileShader(shader);
+}
+
+pub fn createFragmentShader(shaderData: [*]const u8) void {
+    const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
+    c.glShaderSource(shader, 1, &shaderData, null);
+    c.glCompileShader(shader);
 }
 
 pub fn draw() void {
-    c.glDrawElements(c.GL_TRIANGLES, 3, c.GL_UNSIGNED_INT, &0);
+    c.glDrawElements(c.GL_TRIANGLES, 3, c.GL_UNSIGNED_INT, &indices);
 }
 
 pub fn enableVertexAttrib() void {
@@ -100,22 +112,40 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    init();
-
+     init();
     var shouldQuit = false;
+
+    const vertexShader =
+        c\\#version 330 core
+        c\\layout (location = 0) in vec3 aPos;
+        c\\void main()
+        c\\{
+        c\\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+        c\\}
+    ;
+    createVertexShader(vertexShader);
+
+    const fragmentShader =
+        c\\#version 330 core
+        c\\out vec4 FragColor;
+        c\\void main()
+        c\\{
+        c\\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        c\\}
+    ;
+    createFragmentShader(fragmentShader);
 
     c.glClearColor(1.0,0.0,1.0,1.0);
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
-        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
 
+        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
 
         draw();
-
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;
         prev_time = now_time;

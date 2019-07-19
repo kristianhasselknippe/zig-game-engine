@@ -91,6 +91,14 @@ pub fn createDefaultShader() c.GLuint {
     c.glAttachShader(shaderProgram, fragmentShader);
     c.glLinkProgram(shaderProgram);
 
+    //var success: c.GLuint = undefined;
+    //c.glGetProgramiv(shaderProgram, c.GL_LINK_STATUS, &success);
+    //if(!success) {
+        //c.glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+       //debug
+    //}
+    debug_gl.assertNoError();
+
     c.glDeleteShader(vertexShader);
     c.glDeleteShader(fragmentShader);
 
@@ -114,14 +122,6 @@ pub fn enableVertexAttrib() void {
         0,                  // stride
         null            // array buffer offset
     );
-}
-
-pub fn debug_shader_compilation() void {
-    //glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    //if(!success) {
-    //    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-    //   ...
-    //}
 }
 
 pub fn main() anyerror!void {

@@ -15,7 +15,7 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
 }
 
 fn Vec3(comptime T: type) type {
-    return struct {
+    return packed struct {
         x: T,
         y: T,
         z: T,
@@ -31,9 +31,45 @@ pub fn init() void {
         Vertex { .x = 0.0, .y = 1.0, .z = 0.0 }
     };
 
+    const indices = [_]c.GLuint {
+        0,1,2,0,2,3
+    };
+
+    var vao: c.GLuint = undefined;
+    c.glGenVertexArrays(1, &vao);
+    c.glBindVertexArray(vao);
+
     var vbo: c.GLuint = undefined;
-    c.glGenVertexArrays(1, &vbo);
-    c.glBindVertexArray(vbo);
+    c.glGenBuffers(1, &vbo);
+    c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
+    c.glBufferData(c.GL_ARRAY_BUFFER, 4 * data.len, &data[0], c.GL_STATIC_DRAW);
+
+    var ebo: c.GLuint = undefined;
+    c.glGenBuffers(1, &ebo);
+    c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ebo);
+    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, 4 * indices.len, &indices[0], c.GL_STATIC_DRAW);
+
+}
+
+pub fn draw() void {
+    c.glDrawElements(c.GL_TRIANGLES, 3, c.GL_UNSIGNED_INT, &0);
+}
+
+pub fn enableVertexAttrib() void {
+    // 1st attribute buffer : vertices
+    c.glEnableVertexAttribArray(0);
+    c.glBindBuffer(c.GL_ARRAY_BUFFER, vertexbuffer);
+    c.glVertexAttribPointer(
+        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3,                  // size
+        c.GL_FLOAT,           // type
+        c.GL_FALSE,           // normalized?
+        0,                  // stride
+        0            // array buffer offset
+    );
+    // Draw the triangle !
+    c.glDrawArrays(c.GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
+    c.glDisableVertexAttribArray(0);
 }
 
 pub fn main() anyerror!void {
@@ -71,14 +107,14 @@ pub fn main() anyerror!void {
     c.glClearColor(1.0,0.0,1.0,1.0);
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
+        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
 
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
 
-
-        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
+        draw();
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

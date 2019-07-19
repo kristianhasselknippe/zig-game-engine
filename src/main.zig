@@ -4,6 +4,7 @@ const debug_gl = @import("debug_gl.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
+const sleep = std.time.sleep;
 
 var window: *c.GLFWwindow = undefined;
 const window_width = 900;
@@ -51,10 +52,14 @@ pub fn main() anyerror!void {
     c.glfwWindowHint(c.GLFW_DEPTH_BITS, 0);
     c.glfwWindowHint(c.GLFW_STENCIL_BITS, 8);
     c.glfwWindowHint(c.GLFW_RESIZABLE, c.GL_FALSE);
+    c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 
-    window = c.glfwCreateWindow(window_width, window_height, c"Tetris", null, null) orelse {
+    window = c.glfwCreateWindow(window_width, window_height, c"Game", null, null) orelse {
         panic("unable to create window\n");
     };
+
+    c.glfwMakeContextCurrent(window);
+    c.glfwSwapInterval(1);
 
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
@@ -63,6 +68,8 @@ pub fn main() anyerror!void {
 
     var shouldQuit = false;
 
+    c.glClearColor(1.0,0.0,1.0,1.0);
+
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
 
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
@@ -70,7 +77,8 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
+
+        c.glClear(c.GL_COLOR_BUFFER_BIT);
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;
@@ -79,9 +87,13 @@ pub fn main() anyerror!void {
         //nextFrame(t, elapsed);
 
         //draw(t, @This());
+        c.glColorMask(c.GL_TRUE, c.GL_TRUE, c.GL_TRUE, c.GL_TRUE);
+        c.glDepthMask(c.GL_TRUE);
         c.glfwSwapBuffers(window);
 
         c.glfwPollEvents();
+
+        sleep(10 * 1000 * 1000);
     }
 
     defer c.glfwDestroyWindow(window);

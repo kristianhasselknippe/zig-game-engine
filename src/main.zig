@@ -34,8 +34,7 @@ const data = [_]Vertex{
         0,1,2,0,2,3
     };
 
-pub fn init() void {
-
+pub fn init() void  {
     var vao: c.GLuint = undefined;
     c.glGenVertexArrays(1, &vao);
     c.glBindVertexArray(vao);
@@ -81,7 +80,7 @@ pub fn createDefaultShader() c.GLuint {
         c\\out vec4 FragColor;
         c\\void main()
         c\\{
-        c\\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        c\\    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
         c\\}
     ;
     const fragmentShader = createFragmentShader(fragmentShaderSource);
@@ -105,20 +104,24 @@ pub fn draw() void {
 }
 
 pub fn enableVertexAttrib() void {
-    // 1st attribute buffer : vertices
+    c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 3 * @sizeOf(f32), null);
     c.glEnableVertexAttribArray(0);
-    c.glBindBuffer(c.GL_ARRAY_BUFFER, vertexbuffer);
     c.glVertexAttribPointer(
         0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
         3,                  // size
         c.GL_FLOAT,           // type
         c.GL_FALSE,           // normalized?
         0,                  // stride
-        0            // array buffer offset
+        null            // array buffer offset
     );
-    // Draw the triangle !
-    c.glDrawArrays(c.GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
-    c.glDisableVertexAttribArray(0);
+}
+
+pub fn debug_shader_compilation() void {
+    //glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    //if(!success) {
+    //    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    //   ...
+    //}
 }
 
 pub fn main() anyerror!void {
@@ -149,7 +152,7 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-     init();
+    init();
     var shouldQuit = false;
 
     const defaultShader = createDefaultShader();
@@ -164,14 +167,14 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
+        enableVertexAttrib();
+
         draw();
+
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;
         prev_time = now_time;
 
-        //nextFrame(t, elapsed);
-
-        //draw(t, @This());
         c.glColorMask(c.GL_TRUE, c.GL_TRUE, c.GL_TRUE, c.GL_TRUE);
         c.glDepthMask(c.GL_TRUE);
         c.glfwSwapBuffers(window);

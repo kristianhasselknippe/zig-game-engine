@@ -1,5 +1,6 @@
 const c = @import("c.zig");
 const std = @import("std");
+const assimp = @import("assimp.zig");
 const print = std.debug.warn;
 
 pub fn importSomething() void {
@@ -15,6 +16,11 @@ pub fn importSomething() void {
             @enumToInt(c.aiProcess_JoinIdenticalVertices) |
             @enumToInt(c.aiProcess_SortByPType),
         c"obj");
+    const aiScene = @ptrCast(*const assimp.AiScene, scene);
 
-    print("\nScene {} \n", scene);
+    print("\nScene has meshes {} \n", aiScene.mNumMeshes);
+    print("\nScene has materials {} \n", aiScene.mNumMaterials);
+    print("{?}\n", aiScene.*);
+
+    c.aiReleaseImport(scene);
 }

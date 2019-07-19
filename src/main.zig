@@ -51,16 +51,53 @@ pub fn init() void {
     c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER,  4 * indices.len, &indices[0], c.GL_STATIC_DRAW);
 }
 
-pub fn createVertexShader(shaderData: [*]const u8) void {
+pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {
     const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
     c.glShaderSource(shader, 1, &shaderData, null);
     c.glCompileShader(shader);
+    return shader;
 }
 
-pub fn createFragmentShader(shaderData: [*]const u8) void {
+pub fn createFragmentShader(shaderData: [*]const u8) c.GLuint {
     const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
     c.glShaderSource(shader, 1, &shaderData, null);
     c.glCompileShader(shader);
+    return shader;
+}
+
+pub fn createDefaultShader() c.GLuint {
+    const vertexShaderSource =
+        c\\#version 330 core
+        c\\layout (location = 0) in vec3 aPos;
+        c\\void main()
+        c\\{
+        c\\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+        c\\}
+    ;
+    const vertexShader = createVertexShader(vertexShaderSource);
+
+    const fragmentShaderSource =
+        c\\#version 330 core
+        c\\out vec4 FragColor;
+        c\\void main()
+        c\\{
+        c\\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        c\\}
+    ;
+    const fragmentShader = createFragmentShader(fragmentShaderSource);
+
+    var shaderProgram = c.glCreateProgram();
+
+    c.glAttachShader(shaderProgram, vertexShader);
+    c.glAttachShader(shaderProgram, fragmentShader);
+    c.glLinkProgram(shaderProgram);
+
+    c.glDeleteShader(vertexShader);
+    c.glDeleteShader(fragmentShader);
+
+    c.glUseProgram(shaderProgram);
+
+    return shaderProgram;
 }
 
 pub fn draw() void {
@@ -115,25 +152,7 @@ pub fn main() anyerror!void {
      init();
     var shouldQuit = false;
 
-    const vertexShader =
-        c\\#version 330 core
-        c\\layout (location = 0) in vec3 aPos;
-        c\\void main()
-        c\\{
-        c\\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-        c\\}
-    ;
-    createVertexShader(vertexShader);
-
-    const fragmentShader =
-        c\\#version 330 core
-        c\\out vec4 FragColor;
-        c\\void main()
-        c\\{
-        c\\    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-        c\\}
-    ;
-    createFragmentShader(fragmentShader);
+    const defaultShader = createDefaultShader();
 
     c.glClearColor(1.0,0.0,1.0,1.0);
 

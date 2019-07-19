@@ -58,13 +58,13 @@ pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {
 }
 
 pub fn createFragmentShader(shaderData: [*]const u8) c.GLuint {
-    const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
+    const shader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
     c.glShaderSource(shader, 1, &shaderData, null);
     c.glCompileShader(shader);
     return shader;
 }
 
-pub fn createDefaultShader() c.GLuint {
+pub fn createDefaultShader() !c.GLuint {
     const vertexShaderSource =
         c\\#version 330 core
         c\\layout (location = 0) in vec3 aPos;
@@ -74,6 +74,7 @@ pub fn createDefaultShader() c.GLuint {
         c\\}
     ;
     const vertexShader = createVertexShader(vertexShaderSource);
+    try debug_gl.printShaderInfoLog(vertexShader);
 
     const fragmentShaderSource =
         c\\#version 330 core
@@ -84,6 +85,7 @@ pub fn createDefaultShader() c.GLuint {
         c\\}
     ;
     const fragmentShader = createFragmentShader(fragmentShaderSource);
+    try debug_gl.printShaderInfoLog(fragmentShader);
 
     var shaderProgram = c.glCreateProgram();
 
@@ -91,12 +93,8 @@ pub fn createDefaultShader() c.GLuint {
     c.glAttachShader(shaderProgram, fragmentShader);
     c.glLinkProgram(shaderProgram);
 
-    //var success: c.GLuint = undefined;
-    //c.glGetProgramiv(shaderProgram, c.GL_LINK_STATUS, &success);
-    //if(!success) {
-        //c.glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-       //debug
-    //}
+    try debug_gl.printProgramInfoLog(shaderProgram);
+
     debug_gl.assertNoError();
 
     c.glDeleteShader(vertexShader);

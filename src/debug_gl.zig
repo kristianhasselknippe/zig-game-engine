@@ -3,6 +3,7 @@ const std = @import("std");
 const os = std.os;
 const panic = std.debug.panic;
 const builtin = @import("builtin");
+const c_allocator = @import("std").heap.c_allocator;
 
 pub const is_on = if (builtin.mode == builtin.Mode.ReleaseFast) c.GL_FALSE else c.GL_TRUE;
 
@@ -14,5 +15,36 @@ pub fn assertNoError() void {
         } else {
             std.debug.warn("No GL error");
         }
+    }
+}
+
+
+pub fn printShaderInfoLog(obj: c.GLuint) !void {
+    var infologLength: c_int = 0;
+    var charsWritten: c_int  = 0;
+
+    c.glGetShaderiv(obj, c.GL_INFO_LOG_LENGTH, &infologLength);
+
+    if (infologLength > 0) {
+        var infoLog = try c_allocator.alloc(u8, @intCast(usize, infologLength));
+        c.glGetShaderInfoLog(obj, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
+        std.debug.warn("Shader error\n");
+        std.debug.warn("{}\n", infoLog);
+        c_allocator.free(infoLog);
+    }
+}
+
+pub fn printProgramInfoLog(obj: c.GLuint) !void  {
+    var infologLength: c_int = 0;
+    var  charsWritten: c_int = 0;
+
+    c.glGetProgramiv(obj, c.GL_INFO_LOG_LENGTH, &infologLength);
+
+    if (infologLength > 0) {
+        var infoLog = try c_allocator.alloc(u8, @intCast(usize, infologLength));
+        c.glGetProgramInfoLog(obj, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
+        std.debug.warn("Linker error\n");
+        std.debug.warn("{}\n", infoLog);
+        c_allocator.free(infoLog);
     }
 }

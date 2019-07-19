@@ -8,6 +8,7 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("c");
     exe.linkSystemLibrary("glfw");
     exe.linkSystemLibrary("epoxy");
+    exe.linkSystemLibrary("assimp");
 
     exe.install();
 

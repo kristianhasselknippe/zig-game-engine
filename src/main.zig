@@ -2,6 +2,7 @@ const std = @import("std");
 const print = std.debug.warn;
 const c = @import("c.zig");
 const debug_gl = @import("debug_gl.zig");
+const assets = @import("assets.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
@@ -157,6 +158,8 @@ pub fn main() anyerror!void {
     var shouldQuit = false;
 
     const defaultShader = createDefaultShader();
+
+    assets.importSomething();
 
     c.glClearColor(1.0,0.0,1.0,1.0);
 

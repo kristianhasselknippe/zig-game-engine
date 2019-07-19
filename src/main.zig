@@ -78,7 +78,7 @@ pub fn main() anyerror!void {
         }
 
 
-        c.glClear(c.GL_COLOR_BUFFER_BIT);
+        c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

@@ -13,9 +13,15 @@ pub fn importSomething() void {
         @enumToInt(c.aiProcess_SortByPType), c"obj");
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
 
-    print("\nScene has meshes {} \n", aiScene.mNumMeshes);
-    print("\nScene has materials {} \n", aiScene.mNumMaterials);
-    print("{?}\n", aiScene.*);
+    var i: usize = 0;
+    while (i < aiScene.mNumMeshes) : (i += 1) {
+        const mesh = aiScene.mMeshes[i];
+
+        var vertIndex: usize = 0;
+        while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
+            const vertex = mesh.mVertices[vertIndex];
+        }
+    }
 
     c.aiReleaseImport(scene);
 }

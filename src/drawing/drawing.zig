@@ -49,5 +49,20 @@ fn GLBuffer(comptime bufferType: var) type {
     };
 }
 
+pub fn enableVertexAttrib() void {
+    c.glEnableVertexAttribArray(0);
+    c.glVertexAttribPointer(0, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3, // size
+        c.GL_FLOAT, // type
+        c.GL_FALSE, // normalized?
+        0, // stride
+        null // array buffer offset
+    );
+}
+
+pub fn drawElements(len: c_int) void {
+    c.glDrawElements(c.GL_TRIANGLES, len, c.GL_UNSIGNED_INT, null);
+}
+
 pub const ArrayBuffer = GLBuffer(c.GL_ARRAY_BUFFER);
 pub const ElementArrayBuffer = GLBuffer(c.GL_ELEMENT_ARRAY_BUFFER);

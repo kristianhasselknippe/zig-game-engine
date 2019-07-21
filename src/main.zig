@@ -52,19 +52,16 @@ pub fn init() void {
     ebo.setData(c.GLuint, indices[0..indices.len]);
 }
 
-pub fn draw() void {
-    c.glDrawElements(c.GL_TRIANGLES, indices.len, c.GL_UNSIGNED_INT, null);
-}
-
-pub fn enableVertexAttrib() void {
-    c.glEnableVertexAttribArray(0);
-    c.glVertexAttribPointer(0, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3, // size
-        c.GL_FLOAT, // type
-        c.GL_FALSE, // normalized?
-        0, // stride
-        null // array buffer offset
-    );
+fn initGlOptions() void {
+    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 3);
+    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 2);
+    c.glfwWindowHint(c.GLFW_OPENGL_FORWARD_COMPAT, c.GL_TRUE);
+    c.glfwWindowHint(c.GLFW_OPENGL_DEBUG_CONTEXT, debug_gl.is_on);
+    c.glfwWindowHint(c.GLFW_OPENGL_PROFILE, c.GLFW_OPENGL_CORE_PROFILE);
+    c.glfwWindowHint(c.GLFW_DEPTH_BITS, 0);
+    c.glfwWindowHint(c.GLFW_STENCIL_BITS, 8);
+    c.glfwWindowHint(c.GLFW_RESIZABLE, c.GL_FALSE);
+    c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
 pub fn main() anyerror!void {
@@ -75,15 +72,7 @@ pub fn main() anyerror!void {
     }
     defer c.glfwTerminate();
 
-    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 3);
-    c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 2);
-    c.glfwWindowHint(c.GLFW_OPENGL_FORWARD_COMPAT, c.GL_TRUE);
-    c.glfwWindowHint(c.GLFW_OPENGL_DEBUG_CONTEXT, debug_gl.is_on);
-    c.glfwWindowHint(c.GLFW_OPENGL_PROFILE, c.GLFW_OPENGL_CORE_PROFILE);
-    c.glfwWindowHint(c.GLFW_DEPTH_BITS, 0);
-    c.glfwWindowHint(c.GLFW_STENCIL_BITS, 8);
-    c.glfwWindowHint(c.GLFW_RESIZABLE, c.GL_FALSE);
-    c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
+    initGlOptions();
 
     window = c.glfwCreateWindow(window_width, window_height, c"Game", null, null) orelse {
         panic("unable to create window\n");
@@ -111,9 +100,9 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        enableVertexAttrib();
+        drawing.enableVertexAttrib();
 
-        draw();
+        drawing.drawElements(indices.len);
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

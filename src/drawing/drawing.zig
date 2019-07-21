@@ -1,6 +1,6 @@
 const print = @import("std").debug.warn;
-const c = @import("c.zig");
-const debug_gl = @import("debug_gl.zig");
+const c = @import("../c.zig");
+const debug_gl = @import("../debug_gl.zig");
 
 pub const VertexArray = struct {
     handle: c.GLuint,

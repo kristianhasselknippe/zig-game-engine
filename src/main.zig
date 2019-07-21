@@ -3,7 +3,8 @@ const print = std.debug.warn;
 const c = @import("c.zig");
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
-const drawing = @import("drawing.zig");
+const drawing = @import("drawing/drawing.zig");
+const shader = @import("drawing/shader.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
@@ -49,61 +50,6 @@ pub fn init() void {
     const ebo = drawing.ElementArrayBuffer.create();
     ebo.bind();
     ebo.setData(c.GLuint, indices[0..indices.len]);
-}
-
-pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {
-    const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
-    c.glShaderSource(shader, 1, &shaderData, null);
-    c.glCompileShader(shader);
-    return shader;
-}
-
-pub fn createFragmentShader(shaderData: [*]const u8) c.GLuint {
-    const shader = c.glCreateShader(c.GL_FRAGMENT_SHADER);
-    c.glShaderSource(shader, 1, &shaderData, null);
-    c.glCompileShader(shader);
-    return shader;
-}
-
-pub fn createDefaultShader() !c.GLuint {
-    const vertexShaderSource =
-        c\\#version 330 core
-        c\\layout (location = 0) in vec3 aPos;
-        c\\void main()
-        c\\{
-        c\\    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-        c\\}
-    ;
-    const vertexShader = createVertexShader(vertexShaderSource);
-    try debug_gl.printShaderInfoLog(vertexShader);
-
-    const fragmentShaderSource =
-        c\\#version 330 core
-        c\\out vec4 FragColor;
-        c\\void main()
-        c\\{
-        c\\    FragColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        c\\}
-    ;
-    const fragmentShader = createFragmentShader(fragmentShaderSource);
-    try debug_gl.printShaderInfoLog(fragmentShader);
-
-    var shaderProgram = c.glCreateProgram();
-
-    c.glAttachShader(shaderProgram, vertexShader);
-    c.glAttachShader(shaderProgram, fragmentShader);
-    c.glLinkProgram(shaderProgram);
-
-    try debug_gl.printProgramInfoLog(shaderProgram);
-
-    debug_gl.assertNoError();
-
-    c.glDeleteShader(vertexShader);
-    c.glDeleteShader(fragmentShader);
-
-    c.glUseProgram(shaderProgram);
-
-    return shaderProgram;
 }
 
 pub fn draw() void {
@@ -152,7 +98,7 @@ pub fn main() anyerror!void {
     init();
     var shouldQuit = false;
 
-    const defaultShader = createDefaultShader();
+    const defaultShader = shader.createDefaultShader();
 
     assets.importSomething();
 

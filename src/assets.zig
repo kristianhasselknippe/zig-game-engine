@@ -4,7 +4,7 @@ const assimp = @import("assimp.zig");
 const print = std.debug.warn;
 
 pub fn importSomething() void {
-    const objFile = @embedFile("./assets/teapot.obj");
+    const objFile = @embedFile("./assets/models/teapot.obj");
     //print("Obj file len {}", objFile.len);
 
     const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |

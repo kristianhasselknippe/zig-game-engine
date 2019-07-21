@@ -3,6 +3,7 @@ const print = std.debug.warn;
 const c = @import("c.zig");
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
+const drawing = @import("drawing.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
@@ -26,33 +27,32 @@ fn Vec3(comptime T: type) type {
 
 const Vertex = Vec3(f32);
 
-const data = [_]Vertex{
-    Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },
-    Vertex{ .x = 1.0, .y = -1.0, .z = 0.0 },
-    Vertex{ .x = 0.0, .y = 1.0, .z = 0.0 },
+var data = [_]Vertex{
+        Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },
+        Vertex{ .x = 1.0, .y = -1.0, .z = 0.0 },
+        Vertex{ .x = 0.0, .y = 1.0, .z = 0.0 },
 };
 
-const indices = [_]c.GLuint{
+var indices = [_]c.GLuint{
     0, 1, 2,
 };
 
 pub fn init() void {
+
     var vao: c.GLuint = undefined;
     c.glGenVertexArrays(1, &vao);
     c.glBindVertexArray(vao);
     print("vao: {} \n", vao);
 
-    var vbo: c.GLuint = undefined;
-    c.glGenBuffers(1, &vbo);
-    c.glBindBuffer(c.GL_ARRAY_BUFFER, vbo);
-    print("vbo: {}, len of verts {} \n", vbo, @sizeOf(Vertex) * data.len);
-    c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(Vertex) * data.len, &data[0], c.GL_STATIC_DRAW);
+    const vbo = drawing.ArrayBuffer.create();
+    vbo.bind();
+    vbo.setData(Vertex, data[0..data.len]);
+    //c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(Vertex) * data.len, &data[0], c.GL_STATIC_DRAW);
 
-    var ebo: c.GLuint = undefined;
-    c.glGenBuffers(1, &ebo);
-    print("ebo: {} \n", ebo);
-    c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ebo);
-    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(c.GLuint) * indices.len, &indices[0], c.GL_STATIC_DRAW);
+    const ebo = drawing.ElementArrayBuffer.create();
+    ebo.bind();
+    //c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(c.GLuint) * indices.len, &indices[0], c.GL_STATIC_DRAW);
+    ebo.setData(c.GLuint, indices[0..indices.len]);
 }
 
 pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {

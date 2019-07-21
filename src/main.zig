@@ -20,23 +20,23 @@ fn Vec3(comptime T: type) type {
     return struct {
         x: T,
         y: T,
-        z: T
+        z: T,
     };
 }
 
 const Vertex = Vec3(f32);
 
 const data = [_]Vertex{
-        Vertex { .x = -1.0, .y = -1.0, .z = 0.0 },
-        Vertex { .x = 1.0, .y = -1.0, .z = 0.0 },
-        Vertex { .x = 0.0, .y = 1.0, .z = 0.0 }
-    };
+    Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },
+    Vertex{ .x = 1.0, .y = -1.0, .z = 0.0 },
+    Vertex{ .x = 0.0, .y = 1.0, .z = 0.0 },
+};
 
-    const indices = [_]c.GLuint {
-        0,1,2
-    };
+const indices = [_]c.GLuint{
+    0, 1, 2,
+};
 
-pub fn init() void  {
+pub fn init() void {
     var vao: c.GLuint = undefined;
     c.glGenVertexArrays(1, &vao);
     c.glBindVertexArray(vao);
@@ -52,7 +52,7 @@ pub fn init() void  {
     c.glGenBuffers(1, &ebo);
     print("ebo: {} \n", ebo);
     c.glBindBuffer(c.GL_ELEMENT_ARRAY_BUFFER, ebo);
-    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER,  @sizeOf(c.GLuint) * indices.len, &indices[0], c.GL_STATIC_DRAW);
+    c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(c.GLuint) * indices.len, &indices[0], c.GL_STATIC_DRAW);
 }
 
 pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {
@@ -116,13 +116,12 @@ pub fn draw() void {
 
 pub fn enableVertexAttrib() void {
     c.glEnableVertexAttribArray(0);
-    c.glVertexAttribPointer(
-        0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3,                  // size
-        c.GL_FLOAT,           // type
-        c.GL_FALSE,           // normalized?
-        0,                  // stride
-        null            // array buffer offset
+    c.glVertexAttribPointer(0, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+        3, // size
+        c.GL_FLOAT, // type
+        c.GL_FALSE, // normalized?
+        0, // stride
+        null // array buffer offset
     );
 }
 
@@ -161,10 +160,9 @@ pub fn main() anyerror!void {
 
     assets.importSomething();
 
-    c.glClearColor(1.0,0.0,1.0,1.0);
+    c.glClearColor(1.0, 0.0, 1.0, 1.0);
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
-
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
         if (quitKeyPressed == c.GLFW_PRESS) {
@@ -178,7 +176,6 @@ pub fn main() anyerror!void {
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;
         prev_time = now_time;
-
 
         c.glfwSwapBuffers(window);
 

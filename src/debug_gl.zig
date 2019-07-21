@@ -18,10 +18,9 @@ pub fn assertNoError() void {
     }
 }
 
-
 pub fn printShaderInfoLog(obj: c.GLuint) !void {
     var infologLength: c_int = 0;
-    var charsWritten: c_int  = 0;
+    var charsWritten: c_int = 0;
 
     c.glGetShaderiv(obj, c.GL_INFO_LOG_LENGTH, &infologLength);
 
@@ -34,9 +33,9 @@ pub fn printShaderInfoLog(obj: c.GLuint) !void {
     }
 }
 
-pub fn printProgramInfoLog(obj: c.GLuint) !void  {
+pub fn printProgramInfoLog(obj: c.GLuint) !void {
     var infologLength: c_int = 0;
-    var  charsWritten: c_int = 0;
+    var charsWritten: c_int = 0;
 
     c.glGetProgramiv(obj, c.GL_INFO_LOG_LENGTH, &infologLength);
 

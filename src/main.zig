@@ -39,19 +39,15 @@ var indices = [_]c.GLuint{
 
 pub fn init() void {
 
-    var vao: c.GLuint = undefined;
-    c.glGenVertexArrays(1, &vao);
-    c.glBindVertexArray(vao);
-    print("vao: {} \n", vao);
+    var vao = drawing.VertexArray.create();
+    vao.bind();
 
     const vbo = drawing.ArrayBuffer.create();
     vbo.bind();
     vbo.setData(Vertex, data[0..data.len]);
-    //c.glBufferData(c.GL_ARRAY_BUFFER, @sizeOf(Vertex) * data.len, &data[0], c.GL_STATIC_DRAW);
 
     const ebo = drawing.ElementArrayBuffer.create();
     ebo.bind();
-    //c.glBufferData(c.GL_ELEMENT_ARRAY_BUFFER, @sizeOf(c.GLuint) * indices.len, &indices[0], c.GL_STATIC_DRAW);
     ebo.setData(c.GLuint, indices[0..indices.len]);
 }
 

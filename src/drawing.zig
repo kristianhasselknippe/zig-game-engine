@@ -1,5 +1,25 @@
+const print = @import("std").debug.warn;
 const c = @import("c.zig");
 const debug_gl = @import("debug_gl.zig");
+
+pub const VertexArray = struct {
+    handle: c.GLuint,
+
+    pub fn create() @This() {
+        var vao: c.GLuint = undefined;
+        c.glGenVertexArrays(1, &vao);
+
+        return @This() {
+            .handle = vao
+        };
+    }
+
+    pub fn bind(self: @This()) void {
+        c.glBindVertexArray(self.handle);
+        print("Bound vao: <{}> \n", self.handle);
+        debug_gl.assertNoError();
+    }
+};
 
 fn GLBuffer(comptime bufferType: var) type {
     return struct {
@@ -17,6 +37,7 @@ fn GLBuffer(comptime bufferType: var) type {
 
         pub fn bind(self: Self) void {
             c.glBindBuffer(bufferType, self.handle);
+            print("Bound buffer: {} <{}> \n", @typeName(@typeOf(bufferType)), self.handle);
             debug_gl.assertNoError();
         }
 

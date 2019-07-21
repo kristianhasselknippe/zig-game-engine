@@ -60,6 +60,17 @@ pub fn enableVertexAttrib() void {
     );
 }
 
+pub fn setVertexAttribLayout(comptime T: type) void {
+    switch (@typeInfo(T)) {
+        .Struct => | *info | {
+            inline for (info.fields) |field| {
+                print("Name: {} - {}\n", field.name, @typeName(field.field_type));
+            }
+        },
+        else => unreachable
+    }
+}
+
 pub fn drawElements(len: c_int) void {
     c.glDrawElements(c.GL_TRIANGLES, len, c.GL_UNSIGNED_INT, null);
 }

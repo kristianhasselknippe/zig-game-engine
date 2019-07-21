@@ -18,6 +18,13 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
     panic("Error: {}\n", description);
 }
 
+fn Vec2(comptime T: type) type {
+    return struct {
+        x: T,
+        y: T,
+    };
+}
+
 fn Vec3(comptime T: type) type {
     return struct {
         x: T,
@@ -25,6 +32,8 @@ fn Vec3(comptime T: type) type {
         z: T,
     };
 }
+
+const TexCoord = Vec2(f32);
 
 const Vertex = Vec3(f32);
 
@@ -64,6 +73,11 @@ fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
+const VertexAttribLayout = struct {
+    pos: Vertex,
+    texCoord: TexCoord
+};
+
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
 
@@ -90,6 +104,8 @@ pub fn main() anyerror!void {
     const defaultShader = shader.createDefaultShader();
 
     assets.importSomething();
+
+    drawing.setVertexAttribLayout(VertexAttribLayout);
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 

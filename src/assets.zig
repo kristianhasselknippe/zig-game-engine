@@ -12,6 +12,7 @@ pub fn importSomething() void {
                                                @enumToInt(c.aiProcess_JoinIdenticalVertices) |
                                                @enumToInt(c.aiProcess_SortByPType), c"obj");
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
+    //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
 
     print("Size of u16: {}\n", @intCast(usize, @sizeOf(u16)));
     print("Size of c_uint: {}\n", @intCast(usize, @sizeOf(c_uint)));

@@ -51,8 +51,20 @@ pub fn importSomething() void {
             }
         }
 
+        print("Size of mesh: {}\n", @intCast(usize, @sizeOf(assimp.AiMesh)));
+        print("Size of AiColor4D: {}\n", @intCast(usize, @sizeOf(assimp.AiColor4D)));
+        print("Size of Vec3: {}\n", @intCast(usize, @sizeOf(assimp.AiVector3D)));
+        print("Size of [*]AiFace: {}\n", @intCast(usize, @sizeOf([*]assimp.AiFace)));
+        print("Offset of mNormals: {}:\n", @intCast(usize, @byteOffsetOf(assimp.AiMesh, "mNormals")));
+        print("Offset of mColors: {}:\n", @intCast(usize, @byteOffsetOf(assimp.AiMesh, "mColors")));
+        print("Offset of mtexturecoords: {}:\n", @intCast(usize, @byteOffsetOf(assimp.AiMesh, "mTextureCoords")));
+        print("Offset of mFaces: {}:\n", @intCast(usize, @byteOffsetOf(assimp.AiMesh, "mFaces")));
+        print("AI_MAX_NUMBER_OF_COLOR_SETS: {}:\n", @intCast(usize, assimp.AI_MAX_NUMBER_OF_COLOR_SETS));
+        print("Size of AiColor4D: {}\n", @intCast(usize, @sizeOf(assimp.AiColor4D)));
+        
         print("Faces: {}\n", &mesh.mFaces[0]);
         print("Num faces {}\n", mesh.mNumFaces);
+
         var faceIndex: usize = 0;
         while (faceIndex < mesh.mNumFaces) : (faceIndex+=1) {
             print("Foo\n");

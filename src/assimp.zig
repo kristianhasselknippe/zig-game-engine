@@ -45,8 +45,8 @@ pub const AiAABB = extern struct {
     mMax: AiVector3D,
 };
 
-const AI_MAX_NUMBER_OF_COLOR_SETS = 0x8;
-const AI_MAX_NUMBER_OF_TEXTURECOORDS = 0x8;
+pub const AI_MAX_NUMBER_OF_COLOR_SETS = 0x8;
+pub const AI_MAX_NUMBER_OF_TEXTURECOORDS = 0x8;
 
 const PrimitiveTypes = extern enum(c_uint) {
     Point = 0x1,
@@ -127,7 +127,7 @@ pub const AiMesh = extern struct {
     ///A mesh may contain 0 to #AI_MAX_NUMBER_OF_COLOR_SETS vertex
     ///colors per vertex. NULL if not present. Each array is
     ///mNumVertices in size if present.
-    mColors: [AI_MAX_NUMBER_OF_COLOR_SETS]AiColor4D,
+    mColors: [AI_MAX_NUMBER_OF_COLOR_SETS]*AiColor4D,
 
     ///Vertex texture coords, also known as UV channels.
     ///A mesh may contain 0 to AI_MAX_NUMBER_OF_TEXTURECOORDS per

@@ -1,4 +1,5 @@
 const Builder = @import("std").build.Builder;
+const builtin = @import("builtin");
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
@@ -9,7 +10,9 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("glfw");
     exe.linkSystemLibrary("epoxy");
     exe.linkSystemLibrary("assimp");
-    exe.linkSystemLibrary("unwind");
+    if (builtin.os == builtin.Os.linux) {
+        exe.linkSystemLibrary("unwind");
+    }
 
     exe.install();
 

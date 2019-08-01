@@ -43,12 +43,23 @@ pub const AiAABB = extern struct {
 const AI_MAX_NUMBER_OF_COLOR_SETS = 1;
 const AI_MAX_NUMBER_OF_TEXTURECOORDS = 1;
 
+const PrimitiveTypes = enum(c_uint) {
+    Point = 0x1,
+    Line = 0x2,
+    PointLine = 0x3,
+    Triangle = 0x4,
+    PointTriangle = 0x5,
+    LineTriangle = 0x6,
+    PointLineTriangle = 0x7,
+    Polygon = 0x8
+};
+
 pub const AiMesh = extern struct {
     ///Bitwise combination of the members of the #aiPrimitiveType enum.
     ///This specifies which types of primitives are present in the mesh.
     ///The "SortByPrimitiveType"-Step can be used to make sure the
     ///output meshes consist of one primitive type each.
-    mPrimitiveTypes: c_uint,
+    mPrimitiveTypes: PrimitiveTypes,
 
     ///The number of vertices in this mesh.
     ///This is also the size of all of the per-vertex data arrays.

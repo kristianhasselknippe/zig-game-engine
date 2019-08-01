@@ -17,11 +17,16 @@ pub fn importSomething() void {
     while (i < aiScene.mNumMeshes) : (i += 1) {
         const mesh = aiScene.mMeshes[i];
 
+        print("Primitive type: {}\n", mesh.mPrimitiveTypes);
+
         var vertIndex: usize = 0;
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
             const vertex = mesh.mVertices[vertIndex];
+            print("Vertex: {}\n", vertex);
         }
-    }
+        var elemIndex: usize = 0;
+//        while (elemIndex < mesh.n
+      }
 
     c.aiReleaseImport(scene);
 }

@@ -23,7 +23,12 @@ pub const AiColor4D = extern struct {
 
 pub const AiString = []u8;
 
-pub const AiFace = @OpaqueType();
+pub const AiFace = extern struct {
+    mNumIndices: c_uint,
+
+    //! Pointer to the indices array. Size of the array is given in numIndices.
+    mIndices: [*]c_uint,
+};
 
 pub const AiBone = @OpaqueType();
 
@@ -43,7 +48,7 @@ pub const AiAABB = extern struct {
 const AI_MAX_NUMBER_OF_COLOR_SETS = 1;
 const AI_MAX_NUMBER_OF_TEXTURECOORDS = 1;
 
-const PrimitiveTypes = enum(c_uint) {
+const PrimitiveTypes = extern enum(c_uint) {
     Point = 0x1,
     Line = 0x2,
     PointLine = 0x3,
@@ -95,7 +100,7 @@ pub const AiMesh = extern struct {
     ///@note Normal vectors computed by Assimp are always unit-length.
     ///However, this needn't apply for normals that have been taken
     ///  directly from the model file.
-    mNormals: [*]AiVector3D,
+    mNormals: ?[*]AiVector3D,
 
     ///Vertex tangents.
     ///The tangent of a vertex points in the direction of the positive
@@ -108,7 +113,7 @@ pub const AiMesh = extern struct {
     ///the #mNormals member for a detailed discussion of qNaNs.
     ///@note If the mesh contains tangents, it automatically also
     ///contains bitangents.
-    mTangents: [*]AiVector3D,
+    mTangents: ?[*]AiVector3D,
 
     ///Vertex bitangents.
     ///The bitangent of a vertex points in the direction of the positive
@@ -116,18 +121,18 @@ pub const AiMesh = extern struct {
     ///present. The array is mNumVertices in size.
     ///@note If the mesh contains tangents, it automatically also contains
     ///bitangents.
-    mBitangents: [*]AiVector3D,
+    mBitangents: ?[*]AiVector3D,
 
     ///Vertex color sets.
     ///A mesh may contain 0 to #AI_MAX_NUMBER_OF_COLOR_SETS vertex
     ///colors per vertex. NULL if not present. Each array is
     ///mNumVertices in size if present.
-    mColors: [AI_MAX_NUMBER_OF_COLOR_SETS]AiColor4D,
+    mColors: ?[*]AiColor4D,
 
     ///Vertex texture coords, also known as UV channels.
     ///A mesh may contain 0 to AI_MAX_NUMBER_OF_TEXTURECOORDS per
     ///vertex. NULL if not present. The array is mNumVertices in size.
-    mTextureCoords: [AI_MAX_NUMBER_OF_TEXTURECOORDS]*AiVector3D,
+    mTextureCoords: ?[*]*AiVector3D,
 
     ///Specifies the number of components for a given UV channel.
     ///Up to three channels are supported (UVW, for accessing volume
@@ -135,14 +140,14 @@ pub const AiMesh = extern struct {
     ///component p.z of mTextureCoords[n][p] is set to 0.0f.
     ///If the value is 1 for a given channel, p.y is set to 0.0f, too.
     ///@note 4D coords are not supported
-    mNumUVComponents: [AI_MAX_NUMBER_OF_TEXTURECOORDS]c_uint,
+    mNumUVComponents: ?[*]c_uint,
 
     ///The faces the mesh is constructed from.
     ///Each face refers to a number of vertices by their indices.
     ///This array is always present in a mesh, its size is given
     ///in mNumFaces. If the #AI_SCENE_FLAGS_NON_VERBOSE_FORMAT
     ///is NOT set each face references an unique set of vertices.
-    mFaces: *AiFace,
+    mFaces: [*]AiFace,
 
     ///The number of bones this mesh contains.
     ///Can be 0, in which case the mBones array is NULL.
@@ -151,7 +156,7 @@ pub const AiMesh = extern struct {
     ///The bones of this mesh.
     ///A bone consists of a name by which it can be found in the
     ///frame hierarchy and a set of vertex weights.
-    mBones: **AiBone,
+    mBones: ?**AiBone,
 
     ///The material used by this mesh.
     ///A mesh uses only a single material. If an imported model uses

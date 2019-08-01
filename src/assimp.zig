@@ -45,8 +45,8 @@ pub const AiAABB = extern struct {
     mMax: AiVector3D,
 };
 
-const AI_MAX_NUMBER_OF_COLOR_SETS = 1;
-const AI_MAX_NUMBER_OF_TEXTURECOORDS = 1;
+const AI_MAX_NUMBER_OF_COLOR_SETS = 0x8;
+const AI_MAX_NUMBER_OF_TEXTURECOORDS = 0x8;
 
 const PrimitiveTypes = extern enum(c_uint) {
     Point = 0x1,
@@ -127,12 +127,12 @@ pub const AiMesh = extern struct {
     ///A mesh may contain 0 to #AI_MAX_NUMBER_OF_COLOR_SETS vertex
     ///colors per vertex. NULL if not present. Each array is
     ///mNumVertices in size if present.
-    mColors: ?[*]AiColor4D,
+    mColors: [AI_MAX_NUMBER_OF_COLOR_SETS]AiColor4D,
 
     ///Vertex texture coords, also known as UV channels.
     ///A mesh may contain 0 to AI_MAX_NUMBER_OF_TEXTURECOORDS per
     ///vertex. NULL if not present. The array is mNumVertices in size.
-    mTextureCoords: ?[*]*AiVector3D,
+    mTextureCoords: [AI_MAX_NUMBER_OF_TEXTURECOORDS]*AiVector3D,
 
     ///Specifies the number of components for a given UV channel.
     ///Up to three channels are supported (UVW, for accessing volume
@@ -140,7 +140,7 @@ pub const AiMesh = extern struct {
     ///component p.z of mTextureCoords[n][p] is set to 0.0f.
     ///If the value is 1 for a given channel, p.y is set to 0.0f, too.
     ///@note 4D coords are not supported
-    mNumUVComponents: ?[*]c_uint,
+    mNumUVComponents: [AI_MAX_NUMBER_OF_TEXTURECOORDS]c_uint,
 
     ///The faces the mesh is constructed from.
     ///Each face refers to a number of vertices by their indices.

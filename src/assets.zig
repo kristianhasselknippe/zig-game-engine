@@ -4,17 +4,19 @@ const assimp = @import("assimp.zig");
 const print = std.debug.warn;
 
 pub fn importSomething() void {
-    const objFile = @embedFile("./assets/models/teapot.obj");
-    //print("Obj file len {}", objFile.len);
+    const objFile = @embedFile("./assets/models/teapot.fbx");
+    print("Obj file len {}", objFile.len);
 
     const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |
                                                @enumToInt(c.aiProcess_Triangulate) |
                                                @enumToInt(c.aiProcess_JoinIdenticalVertices) |
-                                               @enumToInt(c.aiProcess_SortByPType), c"obj");
+                                               @enumToInt(c.aiProcess_SortByPType), c"fbx");
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
 
     print("Size of u16: {}\n", @intCast(usize, @sizeOf(u16)));
     print("Size of c_uint: {}\n", @intCast(usize, @sizeOf(c_uint)));
+
+    print("Num meshes: {} \n", aiScene.mNumMeshes);
     var i: usize = 0;
     while (i < aiScene.mNumMeshes) : (i += 1) {
         const mesh = aiScene.mMeshes[i];

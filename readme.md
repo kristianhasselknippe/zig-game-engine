@@ -4,6 +4,13 @@
 - glfw - https://github.com/glfw/glfw
 - assimp - https://github.com/assimp/assimp
 
+## Ubuntu
+
+- unwind
+```
+sudo apt install libunwind-dev
+```
+
 # To get it to run on macos
 
 ```

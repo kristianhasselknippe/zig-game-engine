@@ -2,6 +2,7 @@ const c = @import("c.zig");
 const std = @import("std");
 const assimp = @import("assimp.zig");
 const print = std.debug.warn;
+use @import("mesh.zig");
 
 pub fn importSomething() void {
     const objFile = @embedFile("./assets/models/teapot.obj");
@@ -53,9 +54,9 @@ pub fn importSomething() void {
 
         var faceIndex: usize = 0;
         while (faceIndex < mesh.mNumFaces) : (faceIndex+=1) {
-            print("Foo\n");
+            //print("Foo\n");
             const face = mesh.mFaces[faceIndex];
-            print("Face {}\n", face.mNumIndices);
+            //print("Face {}\n", face.mNumIndices);
         }
     }
 

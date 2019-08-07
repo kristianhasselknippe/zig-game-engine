@@ -5,6 +5,8 @@ const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
 const shader = @import("drawing/shader.zig");
+use @import("math.zig");
+use @import("mesh.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
@@ -18,24 +20,7 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
     panic("Error: {}\n", description);
 }
 
-fn Vec2(comptime T: type) type {
-    return struct {
-        x: T,
-        y: T,
-    };
-}
 
-fn Vec3(comptime T: type) type {
-    return struct {
-        x: T,
-        y: T,
-        z: T,
-    };
-}
-
-const TexCoord = Vec2(f32);
-
-const Vertex = Vec3(f32);
 
 var data = [_]Vertex{
         Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },

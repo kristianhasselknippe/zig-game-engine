@@ -20,8 +20,6 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
     panic("Error: {}\n", description);
 }
 
-
-
 var data = [_]Vertex{
         Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },
         Vertex{ .x = 1.0, .y = -1.0, .z = 0.0 },
@@ -33,9 +31,6 @@ var indices = [_]c.GLuint{
 };
 
 pub fn init() void {
-
-    var vao = drawing.VertexArray.create();
-    vao.bind();
 
     const vbo = drawing.ArrayBuffer.create();
     vbo.bind();
@@ -83,16 +78,23 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    init();
+    //init();
+    var vao = drawing.VertexArray.create();
+    vao.bind();
     var shouldQuit = false;
 
     const defaultShader = shader.createDefaultShader();
 
-    assets.importSomething();
+    const meshes = (try assets.importSomething()).toSlice();
+    print("My meshes are {}\n", meshes);
 
     drawing.setVertexAttribLayout(VertexAttribLayout);
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
+
+    for (meshes) |mesh| {
+        mesh.uploadData();
+    }
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
@@ -103,7 +105,10 @@ pub fn main() anyerror!void {
 
         drawing.enableVertexAttrib();
 
-        drawing.drawElements(indices.len);
+        //drawing.drawElements(indices.len);
+        for (meshes) |mesh| {
+            mesh.draw();
+        }
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

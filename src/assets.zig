@@ -2,9 +2,11 @@ const c = @import("c.zig");
 const std = @import("std");
 const assimp = @import("assimp.zig");
 const print = std.debug.warn;
+const allocator = @import("std").heap.c_allocator;
+const ArrayList = @import("std").ArrayList;
 use @import("mesh.zig");
 
-pub fn importSomething() void {
+pub fn importSomething() !ArrayList(Mesh) {
     const objFile = @embedFile("./assets/models/teapot.obj");
     print("Obj file len {}", objFile.len);
 
@@ -19,6 +21,9 @@ pub fn importSomething() void {
     print("Size of c_uint: {}\n", @intCast(usize, @sizeOf(c_uint)));
 
     print("Scene: {} \n", aiScene);
+
+    var meshes = ArrayList(Mesh).init(allocator);
+
     var i: usize = 0;
     while (i < aiScene.mNumMeshes) : (i += 1) {
         const mesh = aiScene.mMeshes[i];
@@ -37,28 +42,32 @@ pub fn importSomething() void {
 
         print("Mesh name {}\n", mesh.mName);
 
+        var vertices = try allocator.alloc(Vertex, mesh.mNumVertices);
         var vertIndex: usize = 0;
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
-            const vertex = mesh.mVertices[vertIndex];
-            //print("Vertex: {}\n", vertex);
+            vertices[vertIndex] = Vertex {
+                .x = mesh.mVertices[vertIndex].x,
+                .y = mesh.mVertices[vertIndex].y,
+                .z = mesh.mVertices[vertIndex].z,
+            };
         }
 
-        if (mesh.mNormals) | normals | {
-            //print("Num normals {}\n", mesh.mNumVertices);
-            var normIndex: usize = 0;
-            while (normIndex < mesh.mNumVertices) : (normIndex += 1) {
-                const norm = normals[normIndex];
-                //print("Norm {}\n", norm);
+        var elements = try allocator.alloc(Element, mesh.mNumFaces * 3);
+        var faceIndex: usize = 0;
+        while (faceIndex < mesh.mNumFaces) : (faceIndex+=1) {
+            const face = mesh.mFaces[faceIndex];
+            var elementIndex: usize = 0;
+            while (elementIndex < face.mNumIndices) : (elementIndex += 1) {
+                elements[(faceIndex * 3) + elementIndex] = face.mIndices[elementIndex];
             }
         }
 
-        var faceIndex: usize = 0;
-        while (faceIndex < mesh.mNumFaces) : (faceIndex+=1) {
-            //print("Foo\n");
-            const face = mesh.mFaces[faceIndex];
-            //print("Face {}\n", face.mNumIndices);
-        }
+        try meshes.append(Mesh {
+            .vertices = vertices,
+            .indices = elements
+        });
     }
 
     c.aiReleaseImport(scene);
+    return meshes;
 }

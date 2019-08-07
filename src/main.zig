@@ -1,6 +1,7 @@
 const std = @import("std");
 const print = std.debug.warn;
 const c = @import("c.zig");
+const glm = @import("cglm.zig");
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
@@ -30,15 +31,9 @@ var indices = [_]c.GLuint{
     0, 1, 2,
 };
 
-pub fn init() void {
-
-    const vbo = drawing.ArrayBuffer.create();
-    vbo.bind();
-    vbo.setData(Vertex, data[0..data.len]);
-
-    const ebo = drawing.ElementArrayBuffer.create();
-    ebo.bind();
-    ebo.setData(c.GLuint, indices[0..indices.len]);
+pub fn initMatrices() void {
+    const out = glm.perspective(1.0, 1, 0.1, 1000);
+    print("Out was: {}\n", out);
 }
 
 fn initGlOptions() void {
@@ -78,7 +73,7 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    //init();
+    initMatrices();
     var vao = drawing.VertexArray.create();
     vao.bind();
     var shouldQuit = false;

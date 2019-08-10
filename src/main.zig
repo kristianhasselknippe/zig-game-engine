@@ -31,10 +31,6 @@ var indices = [_]c.GLuint{
     0, 1, 2,
 };
 
-pub fn initMatrices() void {
-    const out = glm.perspective(1.0, 1, 0.1, 1000);
-    print("Out was: {}\n", out);
-}
 
 fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -73,12 +69,16 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    initMatrices();
     var vao = drawing.VertexArray.create();
     vao.bind();
     var shouldQuit = false;
 
-    const defaultShader = shader.createDefaultShader();
+    const defaultShader = shader.createDefaultShader() catch @panic("Unable to create default shader");
+    const perspective = glm.perspective(1.0, 1, 0.1, 1000);
+    //TODO: Make sure we free the perspective matrix
+
+    shader.setUniformMat4(defaultShader, c"perspective", perspective);
+
 
     const meshes = (try assets.importSomething()).toSlice();
     print("My meshes are {}\n", meshes);

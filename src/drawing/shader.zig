@@ -2,6 +2,7 @@ const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const std = @import("std");
 const allocator = std.heap.c_allocator;
+const Mat4 = @import("../cglm.zig").Mat4;
 
 pub fn createVertexShader(shaderData: [*]const u8) c.GLuint {
     const shader = c.glCreateShader(c.GL_VERTEX_SHADER);
@@ -44,4 +45,13 @@ pub fn createDefaultShader() !c.GLuint {
     c.glUseProgram(shaderProgram);
 
     return shaderProgram;
+}
+
+pub fn getUniformLocation(program: c.GLuint, name: [*]const u8) c.GLint {
+    return c.glGetUniformLocation(program, name);
+}
+
+pub fn setUniformMat4(program: c.GLuint, name: [*c]const u8, matrix: *Mat4) void {
+    const loc = getUniformLocation(program, name);
+    c.glProgramUniformMatrix4fv(program, @intCast(c.GLint, loc), 1, 0, @ptrCast([*c]const f32, matrix));
 }

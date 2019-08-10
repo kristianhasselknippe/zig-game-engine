@@ -77,7 +77,7 @@ pub fn main() anyerror!void {
     const perspective = glm.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
-    shader.setUniformMat4(defaultShader, c"perspective", perspective);
+    defaultShader.setUniformMat4(c"perspective", perspective);
 
 
     const meshes = (try assets.importSomething()).toSlice();

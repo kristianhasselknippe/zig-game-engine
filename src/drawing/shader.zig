@@ -67,6 +67,16 @@ const ShaderProgram = struct {
             .handle = shaderProgram
         };
     }
+
+    pub fn getUniformLocation(program: ShaderProgram, name: [*]const u8) c.GLint {
+        return c.glGetUniformLocation(program.handle, name);
+    }
+
+    pub fn setUniformMat4(program: ShaderProgram, name: [*c]const u8, matrix: *Mat4) void {
+        const loc = getUniformLocation(program, name);
+        c.glProgramUniformMatrix4fv(program.handle, @intCast(c.GLint, loc), 1, 0, @ptrCast([*c]const f32, matrix));
+    }
+
 };
 
 pub fn createDefaultShader() !ShaderProgram {
@@ -80,13 +90,4 @@ pub fn createDefaultShader() !ShaderProgram {
     const fragmentShader = createFragmentShader(fragmentShaderSource.ptr);
     try fragmentShader.printShaderInfoLog();
     return ShaderProgram.init(vertexShader, fragmentShader);
-}
-
-pub fn getUniformLocation(program: ShaderProgram, name: [*]const u8) c.GLint {
-    return c.glGetUniformLocation(program.handle, name);
-}
-
-pub fn setUniformMat4(program: ShaderProgram, name: [*c]const u8, matrix: *Mat4) void {
-    const loc = getUniformLocation(program, name);
-    c.glProgramUniformMatrix4fv(program.handle, @intCast(c.GLint, loc), 1, 0, @ptrCast([*c]const f32, matrix));
 }

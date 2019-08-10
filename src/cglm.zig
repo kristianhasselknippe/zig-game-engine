@@ -33,3 +33,7 @@ pub fn perspective(fovy: f32, aspect: f32, nearVal: f32, farVal: f32) *Mat4 {
     printMat4(out[0]);
     return &out[0];
 }
+
+test "perspective" {
+    
+}

@@ -91,6 +91,12 @@ pub fn main() anyerror!void {
         mesh.uploadData();
     }
 
+    const Layout = struct {
+        vertex: Vec3(f32),
+        normal: Vec3(f32),
+        uv: Vec2(f32)
+    };
+
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
@@ -98,7 +104,7 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        drawing.enableVertexAttrib();
+        drawing.enableVertexAttrib(Layout);
 
         //drawing.drawElements(indices.len);
         for (meshes) |mesh| {

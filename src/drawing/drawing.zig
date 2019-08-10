@@ -1,6 +1,7 @@
 const print = @import("std").debug.warn;
 const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
+const builtin = @import("builtin");
 
 pub const VertexArray = struct {
     handle: c.GLuint,
@@ -49,15 +50,51 @@ fn GLBuffer(comptime bufferType: var) type {
     };
 }
 
-pub fn enableVertexAttrib() void {
+fn glTypeForZigType(comptime T: type) type {
+    return switch (T) {
+        f32 => c.GL_FLOAT,
+        f16 => c.GL_FLOAT,
+        f64 => c.GL_FLOAT,
+        else => { @compileError("Type not supported as vertex layout type"); }
+    };
+}
+
+fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
+    return s.fields.len;
+}
+
+fn handleVertexAttribComponent(item: builtin.TypeInfo) void {
+    working on mapping struct to layout
+}
+
+pub fn enableVertexAttrib(comptime T: type) void {
     c.glEnableVertexAttribArray(0);
-    c.glVertexAttribPointer(0, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-        3, // size
-        c.GL_FLOAT, // type
-        c.GL_FALSE, // normalized?
-        0, // stride
-        null // array buffer offset
-    );
+
+    const info = @typeInfo(T);
+
+    switch (info) {
+        .Struct => |s| {
+            comptime var position = 0;
+            inline for (s.fields) |field| {
+                print("Struct field: {}", field.name);
+                
+                handleVertexAttribComponent(field);
+                c.glVertexAttribPointer(position, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                                        3, // size
+                                        glTypeForZigType(field.field_type), // type
+                                        c.GL_FALSE, // normalized?
+                                        0, // stride
+                                        null // array buffer offset
+                                        );
+                position += 1;
+            }
+        },
+        else => {
+            @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
+        }
+    }
+    
+    
 }
 
 pub fn setVertexAttribLayout(comptime T: type) void {

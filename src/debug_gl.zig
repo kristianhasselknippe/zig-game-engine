@@ -18,21 +18,6 @@ pub fn assertNoError() void {
     }
 }
 
-pub fn printShaderInfoLog(obj: c.GLuint) !void {
-    var infologLength: c_int = 0;
-    var charsWritten: c_int = 0;
-
-    c.glGetShaderiv(obj, c.GL_INFO_LOG_LENGTH, &infologLength);
-
-    if (infologLength > 0) {
-        var infoLog = try c_allocator.alloc(u8, @intCast(usize, infologLength));
-        c.glGetShaderInfoLog(obj, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
-        std.debug.warn("Shader error\n");
-        std.debug.warn("{}\n", infoLog);
-        c_allocator.free(infoLog);
-    }
-}
-
 pub fn printProgramInfoLog(obj: c.GLuint) !void {
     var infologLength: c_int = 0;
     var charsWritten: c_int = 0;

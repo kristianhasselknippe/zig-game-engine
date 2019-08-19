@@ -1,4 +1,5 @@
 const print = @import("std").debug.warn;
+const fmt = @import("std").fmt;
 const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const builtin = @import("builtin");
@@ -52,9 +53,17 @@ fn GLBuffer(comptime bufferType: var) type {
 
 fn glTypeForZigType(comptime T: type) type {
     return switch (T) {
-        f32 => c.GL_FLOAT,
-        f16 => c.GL_FLOAT,
-        f64 => c.GL_FLOAT,
+        f16, f32, f64 => c.GL_FLOAT,
+        i16, i32, i64 => c.GL_INT,
+        else => { @compileError("Type not supported as vertex layout type: " ++ @typeName(T)); }
+    };
+}
+
+fn glSizeForZigType(comptime T: type) i32 {
+    return switch (T) {
+        f16 => 2,
+        f32 => 4,
+        f64 => 8,
         else => { @compileError("Type not supported as vertex layout type"); }
     };
 }
@@ -63,8 +72,30 @@ fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
     return s.fields.len;
 }
 
-fn handleVertexAttribComponent(item: builtin.TypeInfo) void {
-    working on mapping struct to layout
+fn structFieldToVertexAttribComp(pos: i32, comptime field: type, stride: i32) void {
+    const size = glSizeForZigType(field);
+    const glType = glTypeForZigType(field);
+    c.glVertexAttribPointer(pos, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                            size,
+                            glType,
+                            c.GL_FALSE, // normalized?
+                            stride, // stride
+                            ull // array buffer offset
+                            );
+}
+
+const Shape = struct {
+    numComponents: usize,
+    sizePerComponent: usize,
+};
+
+fn unwrapType(comptime T: type) type {
+    switch (t) {
+        .Struct => |s| {},
+        .Array => |a| {},
+        .Float => |f| {},
+        .Int => |i| {}, 
+    }
 }
 
 pub fn enableVertexAttrib(comptime T: type) void {
@@ -75,17 +106,17 @@ pub fn enableVertexAttrib(comptime T: type) void {
     switch (info) {
         .Struct => |s| {
             comptime var position = 0;
+            const stride = @sizeOf(T);
             inline for (s.fields) |field| {
-                print("Struct field: {}", field.name);
-                
-                handleVertexAttribComponent(field);
-                c.glVertexAttribPointer(position, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                                        3, // size
-                                        glTypeForZigType(field.field_type), // type
-                                        c.GL_FALSE, // normalized?
-                                        0, // stride
-                                        null // array buffer offset
-                                        );
+                print("Struct field({}): {} with stride {}", @intCast(i32, position), field.name, @intCast(i32, stride));
+                structFieldToVertexAttribComp(position, field.field_type, stride);
+                //c.glVertexAttribPointer(position, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                //                        3, // size
+                //                        glTypeForZigType(field.field_type), // type
+                //                        c.GL_FALSE, // normalized?
+                //                        0, // stride
+                //                        null // array buffer offset
+                //                        );
                 position += 1;
             }
         },

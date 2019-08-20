@@ -89,10 +89,37 @@ const Shape = struct {
     sizePerComponent: usize,
 };
 
+fn ensureAllFieldsHaveTheSameSize(structInfo: builtin.Struct) bool {
+    if (structInfo.len() == 0) {
+        return true;
+    }
+
+    firstFieldType = structInfo.fields[0].field_type;
+    for (structInfo.fields) |field| {
+        if (field.field_type != firstFieldType) {
+            return false
+        }
+    }
+    return true
+}
+
 fn unwrapType(comptime T: type) type {
     switch (t) {
-        .Struct => |s| {},
-        .Array => |a| {},
+        .Struct => |s| {
+            if (!ensureAllFieldsHaveTheSameSize(s)) {
+                @compileError("Expected all fields of a vertex attribute struct to have the same size."); //TODO: remove this requirement if possible
+            }
+            return Shape {
+                .numComponents = s.fields.len(),
+                .sizePerComponent = s.fields.
+            }
+        },
+        .Array => |a| {
+            return Shape {
+                .numComponents = a.len(),
+                .sizePerComponent = a.child()
+            };
+        },
         .Float => |f| {},
         .Int => |i| {}, 
     }

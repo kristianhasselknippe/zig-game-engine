@@ -74,24 +74,6 @@ fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
     return s.fields.len;
 }
 
-fn structFieldToVertexAttribComp(pos: i32, comptime field: type, stride: i32) void {
-    const unwrappedType = unwrapType(field);
-    const size = glSizeForZigType(field);
-    const glType = glTypeForZigType(field);
-    c.glVertexAttribPointer(@intCast(c_uint, pos), // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                            size,
-                            glType,
-                            c.GL_FALSE, // normalized?
-                            stride, // stride
-                            null // array buffer offset
-                            );
-}
-
-const Shape = struct {
-    numComponents: usize,
-    sizePerComponent: usize,
-};
-
 fn ensureAllFieldsHaveTheSameSize(comptime structInfo: builtin.TypeInfo.Struct) bool {
     if (structInfo.fields.len == 0) {
         return true;
@@ -106,6 +88,11 @@ fn ensureAllFieldsHaveTheSameSize(comptime structInfo: builtin.TypeInfo.Struct) 
     return true;
 }
 
+const Shape = struct {
+    numComponents: usize,
+    childType: type,
+};
+
 fn unwrapType(comptime T: type) Shape {
     switch (@typeInfo(T)) {
         .Struct => |s| {
@@ -115,25 +102,35 @@ fn unwrapType(comptime T: type) Shape {
             }
             return Shape {
                 .numComponents = s.fields.len,
-                .sizePerComponent = @sizeOf(s.fields[0].field_type)
+                .childType = s.fields[0].field_type,
             };
         },
         .Array => |a| {
             return Shape {
                 .numComponents = a.len,
-                .sizePerComponent = a.child()
+                .childType = a.child(),
             };
         },
         .Float => |f| {
             return Shape {
                 .numComponents = 1,
-                .sizePerComponent = f.bits / 8
+                .childType = switch (f.bits) {
+                    16 => f16,
+                    32 => f32,
+                    64 => f64,
+                    else => unreachable,
+                },
             };
         },
         .Int => |i| {
             return Shape {
                 .numComponents = 1,
-                .sizePerComponent = f.bits / 8
+                .childType = switch (f.bits) {
+                    16 => i16,
+                    32 => i32,
+                    64 => i64,
+                    else => unreachable,
+                },
             };
         },
         else => @compileError("Unsupported type" ++ @typeName(T))
@@ -148,34 +145,39 @@ test "unwrapTypeTest" {
 
     const res = unwrapType(TestStruct);
     assert(res.numComponents == 2);
-    assert(res.sizePerComponent == 4);
+    assert(res.childType == f32);
 
     const res2 = unwrapType(f64);
     assert(res2.numComponents == 1);
-    assert(res2.sizePerComponent == 8);
+    assert(res2.childType == f64);
 }
 
-fn enableVertexAttrib(comptime T: type) void {
+fn enableVertexAttrib(comptime position: i32, comptime stride: i32, comptime T: type) void {
     c.glEnableVertexAttribArray(0);
 
     const info = @typeInfo(T);
 
     switch (info) {
         .Struct => |s| {
-            comptime var position = 0;
-            const stride = @sizeOf(T);
-            inline for (s.fields) |field| {
-                print("Struct field({}): {} with stride {}", @intCast(i32, position), field.name, @intCast(i32, stride));
-                structFieldToVertexAttribComp(position, field.field_type, stride);
-                //c.glVertexAttribPointer(position, // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                //                        3, // size
-                //                        glTypeForZigType(field.field_type), // type
-                //                        c.GL_FALSE, // normalized?
-                //                        0, // stride
-                //                        null // array buffer offset
-                //                        );
-                position += 1;
-            }
+            const name = @typeName(T);
+            const shape = unwrapType(T);
+            const glType = glTypeForZigType(shape.childType);
+
+            print(
+                "Vertex attrib: pos: {}, numComps: {}, childType: {}, stride: {}",
+                position,
+                shape.numComponents,
+                @typeName(shape.childType),
+                @intCast(i32, stride)
+            );
+            c.glVertexAttribPointer(
+                position,
+                shape.numComponents,
+                glTypeForZigType(shape.childType),
+                c.GL_FALSE,
+                stride,
+                null
+            );
         },
         else => {
             @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
@@ -188,9 +190,9 @@ fn enableVertexAttrib(comptime T: type) void {
 pub fn setVertexAttribLayout(comptime T: type) void {
     switch (@typeInfo(T)) {
         .Struct => | *info | {
-            inline for (info.fields) |field| {
+            inline for (info.fields) |field, i| {
                 print("Name: {} - {}\n", field.name, @typeName(field.field_type));
-                enableVertexAttrib(field.field_type);
+                enableVertexAttrib(i, @sizeOf(T), field.field_type);
             }
         },
         else => unreachable

@@ -1,8 +1,10 @@
-const print = @import("std").debug.warn;
-const fmt = @import("std").fmt;
+const std = @import("std");
+const print = std.debug.warn;
+const fmt = std.fmt;
 const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const builtin = @import("builtin");
+const assert = std.debug.assert;
 
 pub const VertexArray = struct {
     handle: c.GLuint,
@@ -51,7 +53,7 @@ fn GLBuffer(comptime bufferType: var) type {
     };
 }
 
-fn glTypeForZigType(comptime T: type) type {
+fn glTypeForZigType(comptime T: type) comptime_int {
     return switch (T) {
         f16, f32, f64 => c.GL_FLOAT,
         i16, i32, i64 => c.GL_INT,
@@ -73,14 +75,15 @@ fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
 }
 
 fn structFieldToVertexAttribComp(pos: i32, comptime field: type, stride: i32) void {
+    const unwrappedType = unwrapType(field);
     const size = glSizeForZigType(field);
     const glType = glTypeForZigType(field);
-    c.glVertexAttribPointer(pos, // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    c.glVertexAttribPointer(@intCast(c_uint, pos), // attribute 0. No particular reason for 0, but must match the layout in the shader.
                             size,
                             glType,
                             c.GL_FALSE, // normalized?
                             stride, // stride
-                            ull // array buffer offset
+                            null // array buffer offset
                             );
 }
 
@@ -89,43 +92,70 @@ const Shape = struct {
     sizePerComponent: usize,
 };
 
-fn ensureAllFieldsHaveTheSameSize(structInfo: builtin.Struct) bool {
-    if (structInfo.len() == 0) {
+fn ensureAllFieldsHaveTheSameSize(comptime structInfo: builtin.TypeInfo.Struct) bool {
+    if (structInfo.fields.len == 0) {
         return true;
     }
 
-    firstFieldType = structInfo.fields[0].field_type;
-    for (structInfo.fields) |field| {
+    comptime const firstFieldType = structInfo.fields[0].field_type;
+    inline for (structInfo.fields) |field| {
         if (field.field_type != firstFieldType) {
-            return false
+            return false;
         }
     }
-    return true
+    return true;
 }
 
-fn unwrapType(comptime T: type) type {
-    switch (t) {
+fn unwrapType(comptime T: type) Shape {
+    switch (@typeInfo(T)) {
         .Struct => |s| {
-            if (!ensureAllFieldsHaveTheSameSize(s)) {
-                @compileError("Expected all fields of a vertex attribute struct to have the same size."); //TODO: remove this requirement if possible
+            comptime const areAllFieldsSameSize = ensureAllFieldsHaveTheSameSize(s);
+            if (!areAllFieldsSameSize) {
+                @compileError("Expected all fields of a vertex attribute struct to have the same size.");
             }
             return Shape {
-                .numComponents = s.fields.len(),
-                .sizePerComponent = s.fields.
-            }
+                .numComponents = s.fields.len,
+                .sizePerComponent = @sizeOf(s.fields[0].field_type)
+            };
         },
         .Array => |a| {
             return Shape {
-                .numComponents = a.len(),
+                .numComponents = a.len,
                 .sizePerComponent = a.child()
             };
         },
-        .Float => |f| {},
-        .Int => |i| {}, 
+        .Float => |f| {
+            return Shape {
+                .numComponents = 1,
+                .sizePerComponent = f.bits / 8
+            };
+        },
+        .Int => |i| {
+            return Shape {
+                .numComponents = 1,
+                .sizePerComponent = f.bits / 8
+            };
+        },
+        else => @compileError("Unsupported type" ++ @typeName(T))
     }
 }
 
-pub fn enableVertexAttrib(comptime T: type) void {
+test "unwrapTypeTest" {
+    const TestStruct = struct {
+        x: f32,
+        y: f32,
+    };
+
+    const res = unwrapType(TestStruct);
+    assert(res.numComponents == 2);
+    assert(res.sizePerComponent == 4);
+
+    const res2 = unwrapType(f64);
+    assert(res2.numComponents == 1);
+    assert(res2.sizePerComponent == 8);
+}
+
+fn enableVertexAttrib(comptime T: type) void {
     c.glEnableVertexAttribArray(0);
 
     const info = @typeInfo(T);
@@ -151,8 +181,8 @@ pub fn enableVertexAttrib(comptime T: type) void {
             @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
         }
     }
-    
-    
+
+
 }
 
 pub fn setVertexAttribLayout(comptime T: type) void {
@@ -160,6 +190,7 @@ pub fn setVertexAttribLayout(comptime T: type) void {
         .Struct => | *info | {
             inline for (info.fields) |field| {
                 print("Name: {} - {}\n", field.name, @typeName(field.field_type));
+                enableVertexAttrib(field.field_type);
             }
         },
         else => unreachable

@@ -104,7 +104,7 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        drawing.enableVertexAttrib(Layout);
+        drawing.setVertexAttribLayout(Layout);
 
         //drawing.drawElements(indices.len);
         for (meshes) |mesh| {

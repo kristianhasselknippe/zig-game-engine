@@ -5,7 +5,10 @@ use @import("drawing/drawing.zig");
 
 pub const TexCoord = Vec2(f32);
 
-pub const Vertex = Vec3(f32);
+pub const Vertex = struct {
+    position: Vec3(f32),
+    uvCoord: Vec2(f32),
+};
 
 pub const Element = c.GLuint;
 

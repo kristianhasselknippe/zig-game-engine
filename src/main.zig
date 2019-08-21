@@ -83,19 +83,13 @@ pub fn main() anyerror!void {
     const meshes = (try assets.importSomething()).toSlice();
     print("My meshes are {}\n", meshes);
 
-    drawing.setVertexAttribLayout(VertexAttribLayout);
+    drawing.setVertexAttribLayout(Vertex);
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 
     for (meshes) |mesh| {
         mesh.uploadData();
     }
-
-    const Layout = struct {
-        vertex: Vec3(f32),
-        normal: Vec3(f32),
-        uv: Vec2(f32)
-    };
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
@@ -104,9 +98,8 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        drawing.setVertexAttribLayout(Layout);
+        drawing.setVertexAttribLayout(Vertex);
 
-        //drawing.drawElements(indices.len);
         for (meshes) |mesh| {
             mesh.draw();
         }

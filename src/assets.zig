@@ -4,6 +4,7 @@ const assimp = @import("assimp.zig");
 const print = std.debug.warn;
 const allocator = @import("std").heap.c_allocator;
 const ArrayList = @import("std").ArrayList;
+use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() !ArrayList(Mesh) {
@@ -45,10 +46,17 @@ pub fn importSomething() !ArrayList(Mesh) {
         var vertices = try allocator.alloc(Vertex, mesh.mNumVertices);
         var vertIndex: usize = 0;
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
+            const position = Vec3(f32) ;
             vertices[vertIndex] = Vertex {
-                .x = mesh.mVertices[vertIndex].x,
-                .y = mesh.mVertices[vertIndex].y,
-                .z = mesh.mVertices[vertIndex].z,
+                .position = Vec3(f32) {
+                    .x = mesh.mVertices[vertIndex].x,
+                    .y = mesh.mVertices[vertIndex].y,
+                    .z = mesh.mVertices[vertIndex].z,
+                },
+                .uvCoord = Vec2(f32) {
+                    .x = 0,
+                    .y = 0
+                } keep working here. We need to get the uvCoords in here
             };
         }
 

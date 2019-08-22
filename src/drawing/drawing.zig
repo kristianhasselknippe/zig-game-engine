@@ -164,7 +164,7 @@ fn enableVertexAttrib(comptime position: i32, comptime stride: i32, comptime T: 
             const glType = glTypeForZigType(shape.childType);
 
             print(
-                "Vertex attrib: pos: {}, numComps: {}, childType: {}, stride: {}",
+                "Vertex attrib: pos: {}, numComps: {}, childType: {}, stride: {}\n",
                 position,
                 shape.numComponents,
                 @typeName(shape.childType),

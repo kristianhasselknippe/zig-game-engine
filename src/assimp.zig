@@ -132,7 +132,7 @@ pub const AiMesh = extern struct {
     ///Vertex texture coords, also known as UV channels.
     ///A mesh may contain 0 to AI_MAX_NUMBER_OF_TEXTURECOORDS per
     ///vertex. NULL if not present. The array is mNumVertices in size.
-    mTextureCoords: [AI_MAX_NUMBER_OF_TEXTURECOORDS]*AiVector3D,
+    mTextureCoords: [AI_MAX_NUMBER_OF_TEXTURECOORDS][*]AiVector3D,
 
     ///Specifies the number of components for a given UV channel.
     ///Up to three channels are supported (UVW, for accessing volume

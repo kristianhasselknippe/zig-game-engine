@@ -1,5 +1,6 @@
 const c = @import("c.zig");
 const std = @import("std");
+const assert = std.debug.assert;
 const assimp = @import("assimp.zig");
 const print = std.debug.warn;
 const allocator = @import("std").heap.c_allocator;
@@ -8,20 +9,16 @@ use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() !ArrayList(Mesh) {
-    const objFile = @embedFile("./assets/models/teapot.obj");
-    print("Obj file len {}", objFile.len);
-
+    const objFile = @embedFile("./assets/models/lambo/Lamborghini_Aventador.fbx");
     const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |
                                                @enumToInt(c.aiProcess_Triangulate) |
                                                @enumToInt(c.aiProcess_JoinIdenticalVertices) |
-                                               @enumToInt(c.aiProcess_SortByPType), c"obj");
+                                               @enumToInt(c.aiProcess_SortByPType), c"fbx");
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
     //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
 
     print("Size of u16: {}\n", @intCast(usize, @sizeOf(u16)));
     print("Size of c_uint: {}\n", @intCast(usize, @sizeOf(c_uint)));
-
-    print("Scene: {} \n", aiScene);
 
     var meshes = ArrayList(Mesh).init(allocator);
 
@@ -29,7 +26,6 @@ pub fn importSomething() !ArrayList(Mesh) {
     while (i < aiScene.mNumMeshes) : (i += 1) {
         const mesh = aiScene.mMeshes[i];
 
-        print("Mesh: {}\n", mesh);
         print("Primitive type: {}\n", mesh.mPrimitiveTypes);
 
         print("Mesh mVertices: {}\n", @ptrToInt(mesh.mVertices));
@@ -37,14 +33,15 @@ pub fn importSomething() !ArrayList(Mesh) {
         print("Mesh mTangents: {}\n", @ptrToInt(mesh.mTangents));
         print("Mesh mBitangents: {}\n", @ptrToInt(mesh.mBitangents));
         print("Mesh mColors: {}\n", mesh.mColors);
-        print("Mesh mTextureCoords: {}\n", mesh.mTextureCoords);
-        print("Mesh mNumUVComponents: {}\n", mesh.mNumUVComponents);
+        print("Mesh mTextureCoords: {}\n", mesh.mTextureCoords[0]);
+        print("Mesh mNumUVComponents: {}\n", mesh.mNumUVComponents[0]);
         print("Mesh mFaces: {}\n", @ptrToInt(mesh.mFaces));
 
         print("Mesh name {}\n", mesh.mName);
 
         var vertices = try allocator.alloc(Vertex, mesh.mNumVertices);
         var vertIndex: usize = 0;
+
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
             const position = Vec3(f32) ;
             vertices[vertIndex] = Vertex {
@@ -54,9 +51,9 @@ pub fn importSomething() !ArrayList(Mesh) {
                     .z = mesh.mVertices[vertIndex].z,
                 },
                 .uvCoord = Vec2(f32) {
-                    .x = 0,
-                    .y = 0
-                } keep working here. We need to get the uvCoords in here
+                    .x = mesh.mTextureCoords[0][vertIndex].x,
+                    .y = mesh.mTextureCoords[0][vertIndex].y
+                }
             };
         }
 

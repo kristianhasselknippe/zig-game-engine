@@ -2,9 +2,13 @@
 
 uniform mat4 perspective;
 
-layout (location = 0) in vec3 aPos;
+layout (location = 0) in vec3 pos;
+layout (location = 1) in vec2 texCoord;
+
+out vec4 color;
 
 void main()
 {
-	gl_Position = perspective * vec4(aPos.x, aPos.y, aPos.z - 400, 1.0);
+	color = vec4(texCoord, 1.0, 1.0);
+	gl_Position = perspective * vec4(pos.x, pos.y, pos.z - 500, 1.0);
 }

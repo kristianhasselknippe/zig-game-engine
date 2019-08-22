@@ -152,49 +152,49 @@ test "unwrapTypeTest" {
     assert(res2.childType == f64);
 }
 
-fn enableVertexAttrib(comptime position: i32, comptime stride: i32, comptime T: type) void {
-    c.glEnableVertexAttribArray(0);
-
-    const info = @typeInfo(T);
-
-    switch (info) {
-        .Struct => |s| {
-            const name = @typeName(T);
-            const shape = unwrapType(T);
-            const glType = glTypeForZigType(shape.childType);
-
-            print(
-                "Vertex attrib: pos: {}, numComps: {}, childType: {}, stride: {}\n",
-                position,
-                shape.numComponents,
-                @typeName(shape.childType),
-                @intCast(i32, stride)
-            );
-            c.glVertexAttribPointer(
-                position,
-                shape.numComponents,
-                glTypeForZigType(shape.childType),
-                c.GL_FALSE,
-                stride,
-                null
-            );
-        },
-        else => {
-            @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
-        }
-    }
-
-
-}
-
-
-
 pub fn setVertexAttribLayout(comptime T: type) void {
+    debug_gl.assertNoError();
     switch (@typeInfo(T)) {
         .Struct => | *info | {
+            comptime var position: i32 = 0;
+            comptime const stride = @sizeOf(T);
+            c.glEnableVertexAttribArray(0);
             inline for (info.fields) |field, i| {
                 print("Name: {} - {}\n", field.name, @typeName(field.field_type));
-                enableVertexAttrib(i, @sizeOf(T), field.field_type);
+
+                const T2 = field.field_type;
+                const info2 = @typeInfo(T2);
+
+                switch (info2) {
+                    .Struct => |s| {
+                        const name = @typeName(T2);
+                        comptime const shape = unwrapType(T2);
+                        comptime const glType = glTypeForZigType(shape.childType);
+
+                        print(
+                            "Vertex attrib: pos: {}, numComps: {}, childType: {}, offset: {}, stride: {}\n",
+                            position,
+                            shape.numComponents,
+                            @typeName(shape.childType),
+                            @intToPtr(?*const c_void, @byteOffsetOf(T, field.name)),
+                            @intCast(i32, stride)
+                        );
+
+                        c.glVertexAttribPointer(
+                            position,
+                            shape.numComponents,
+                            glTypeForZigType(shape.childType),
+                            c.GL_FALSE,
+                            stride,
+                            @intToPtr(?*const c_void, @byteOffsetOf(T, field.name))
+                        );
+                        debug_gl.assertNoError();
+                    },
+                    else => {
+                        @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
+                    }
+                }
+                position += 1;
             }
         },
         else => unreachable

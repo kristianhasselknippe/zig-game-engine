@@ -85,11 +85,9 @@ pub fn main() anyerror!void {
     const meshes = (try assets.importSomething()).toSlice();
     print("My meshes are {}\n", meshes);
 
-    drawing.setVertexAttribLayout(Vertex);
-
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 
-    for (meshes) |mesh| {
+    for (meshes) |*mesh| {
         mesh.uploadData();
     }
 
@@ -104,10 +102,9 @@ pub fn main() anyerror!void {
         defaultShader.setUniformMat4(c"rotation", rotation);
         roll += 0.02;
 
-        drawing.setVertexAttribLayout(Vertex);
-
-        for (meshes) |mesh| {
-            mesh.draw();
+        for (meshes) |*mesh| {
+            print("Mesh vao: {}\n", mesh.vao);
+            mesh.draw(Vertex);
         }
 
         const now_time = c.glfwGetTime();

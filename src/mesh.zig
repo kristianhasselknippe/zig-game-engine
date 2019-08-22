@@ -21,7 +21,13 @@ pub const Mesh = struct {
     vao: ?ArrayBuffer = null,
     ebo: ?ElementArrayBuffer = null,
 
-    pub fn uploadData(self: Self) void {
+    pub fn bind(self: *Self) void {
+        var this = self;
+        this.vao.?.bind();
+        this.ebo.?.bind();
+    }
+
+    pub fn uploadData(self: *Self) void {
         var this = self;
         this.vao = ArrayBuffer.create();
         this.vao.?.bind();
@@ -32,9 +38,12 @@ pub const Mesh = struct {
         this.ebo.?.setData(Element, this.indices);
     }
 
-    pub fn draw(self: Self) void {
+    pub fn draw(self: *Self, comptime vertexLayout: type) void {
+        var this = self;
         const numTriangles = @divFloor(@intCast(i32, self.indices.len), 3);
         print("Drawing triangles {}\n", numTriangles);
+        this.bind();
+        setVertexAttribLayout(vertexLayout);
         drawElements(numTriangles);
     }
 };

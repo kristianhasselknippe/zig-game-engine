@@ -12,6 +12,7 @@ pub fn importSomething() !ArrayList(Mesh) {
     const objFile = @embedFile("./assets/models/lambo/Lamborghini_Aventador.fbx");
     const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |
                                                @enumToInt(c.aiProcess_Triangulate) |
+                                               @enumToInt(c.aiProcess_GenUVCoords) |
                                                @enumToInt(c.aiProcess_JoinIdenticalVertices) |
                                                @enumToInt(c.aiProcess_SortByPType), c"fbx");
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
@@ -43,7 +44,7 @@ pub fn importSomething() !ArrayList(Mesh) {
         var vertIndex: usize = 0;
 
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
-            const position = Vec3(f32) ;
+            const position = Vec3(f32);
             vertices[vertIndex] = Vertex {
                 .position = Vec3(f32) {
                     .x = mesh.mVertices[vertIndex].x,

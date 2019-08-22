@@ -187,6 +187,8 @@ fn enableVertexAttrib(comptime position: i32, comptime stride: i32, comptime T: 
 
 }
 
+
+
 pub fn setVertexAttribLayout(comptime T: type) void {
     switch (@typeInfo(T)) {
         .Struct => | *info | {

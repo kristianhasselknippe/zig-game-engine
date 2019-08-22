@@ -77,6 +77,8 @@ pub fn main() anyerror!void {
     const perspective = glm.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
+    var roll: f32 = 0.0;
+
     defaultShader.setUniformMat4(c"perspective", perspective);
 
 
@@ -97,6 +99,10 @@ pub fn main() anyerror!void {
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
+
+        const rotation = glm.euler(0, 0, roll);
+        defaultShader.setUniformMat4(c"rotation", rotation);
+        roll += 0.02;
 
         drawing.setVertexAttribLayout(Vertex);
 

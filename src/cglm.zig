@@ -64,6 +64,28 @@ pub fn translate(mat: *Mat4, by: Vec3(f32)) *Mat4 {
     return mat;
 }
 
+pub fn mul(a: *Mat4, b: *Mat4) *Mat4 {
+    var out = allocMat4();
+    c.glmc_mat4_mul(a,b,out);
+    return out;
+}
+
+test "mat4_mul" {
+    const m1 = allocMat4();
+    const m2 = allocMat4();
+    m1[0][0] = 5;
+    m1[1][1] = 2;
+    m1[0][3] = 10;
+    m2[0][0] = 3;
+    m2[1][1] = 2;
+    m2[2][1] = 2;
+    const out = mul(m1, m2);
+    assert(out[0][0] == 15);
+    assert(out[1][1] == 4);
+    assert(out[2][1] == 4);
+    assert(out[0][3] == 30);
+}
+
 test "cglm.translation" {
     var vec = Vec3(f32) {
         .x = 10,

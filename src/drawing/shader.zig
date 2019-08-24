@@ -72,12 +72,7 @@ const ShaderProgram = struct {
         return c.glGetUniformLocation(program.handle, name);
     }
 
-    fn setUniformMat4(program: ShaderProgram, name: [*c]const u8, matrix: *Mat4) void {
-        const loc = getUniformLocation(program, name);
-        c.glProgramUniformMatrix4fv(program.handle, @intCast(c.GLint, loc), 1, 0, @ptrCast([*c]const f32, matrix));
-    }
-
-    pub fn setUniform(
+    fn setUniformInternal(
         program: ShaderProgram,
         name: [*c]const u8,
         comptime uniformType: UniformTypeId,
@@ -129,6 +124,14 @@ const ShaderProgram = struct {
                 }
             },
         }
+    }
+
+    pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) void {
+        switch (@typeOf(val)) {
+            *Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, @ptrCast([*c]const f32, val)),
+            else => @compileError("Unsupported uniform type")
+        }
+        
     }
 
 };

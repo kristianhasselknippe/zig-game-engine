@@ -92,9 +92,7 @@ pub fn main() anyerror!void {
 
     defaultShader.setUniform(
         c"perspective",
-        UniformTypeId.Mat4x4,
-        UniformPrimitive.Float,
-        @ptrCast([*c]const f32, perspective)
+        perspective
     );
     const meshes = (try assets.importSomething()).toSlice();
 
@@ -113,10 +111,7 @@ pub fn main() anyerror!void {
 
         const rotation = glm.euler(0, 0, roll);
         defaultShader.setUniform(
-            c"rotation",
-            UniformTypeId.Mat4x4,
-            UniformPrimitive.Float,
-            @ptrCast([*c]const f32, rotation)
+            c"rotation", rotation
         );
         roll += 0.02;
 

@@ -47,7 +47,9 @@ fn GLBuffer(comptime bufferType: var) type {
 
         //TODO: Make sure we can only call this if the buffer is bound
         pub fn setData(self: Self, comptime T: type, data: []T) void {
-            c.glBufferData(bufferType, @intCast(c_long, data.len * @sizeOf(@typeOf(data))), &data[0], c.GL_STATIC_DRAW);
+            const bufferLen = @intCast(c_long, data.len * @sizeOf(T));
+            print("Buffer type size: {}, Buffer len  {}\n", @intCast(i32, @sizeOf(T)), bufferLen);
+            c.glBufferData(bufferType, bufferLen, &data[0], c.GL_STATIC_DRAW);
             debug_gl.assertNoError();
         }
     };
@@ -162,6 +164,7 @@ pub fn setVertexAttribLayout(comptime T: type) void {
             inline for (info.fields) |field, i| {
                 print("Name: {} - {}\n", field.name, @typeName(field.field_type));
 
+                // TODO: Better name than T2
                 const T2 = field.field_type;
                 const info2 = @typeInfo(T2);
 
@@ -188,6 +191,7 @@ pub fn setVertexAttribLayout(comptime T: type) void {
                             stride,
                             @intToPtr(?*const c_void, @byteOffsetOf(T, field.name))
                         );
+                        c.glEnableVertexAttribArray(position);
                         debug_gl.assertNoError();
                     },
                     else => {

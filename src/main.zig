@@ -67,6 +67,7 @@ pub fn main() anyerror!void {
     c.glfwSwapInterval(1);
 
     c.glEnable(c.GL_DEPTH_TEST);
+    c.glDepthFunc(c.GL_LESS);
 
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
@@ -82,10 +83,7 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
 
     defaultShader.setUniformMat4(c"perspective", perspective);
-
-
     const meshes = (try assets.importSomething()).toSlice();
-    print("My meshes are {}\n", meshes);
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 

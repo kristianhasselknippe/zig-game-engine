@@ -29,14 +29,8 @@ fn allocMat4() *Mat4 {
 
 pub fn perspective(fovy: f32, aspect: f32, nearVal: f32, farVal: f32) *Mat4 {
     var out = allocMat4();
-
-    print("Before init \n");
     printMat4(out.*);
-    
-    print("After init \n");
-
     c.glmc_perspective(fovy, aspect, nearVal, farVal, &out[0]);
-    print("After glmc perspective \n");
     printMat4(out.*);
     return out;
 }

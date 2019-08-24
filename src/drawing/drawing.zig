@@ -41,14 +41,12 @@ fn GLBuffer(comptime bufferType: var) type {
 
         pub fn bind(self: Self) void {
             c.glBindBuffer(bufferType, self.handle);
-            print("Bound buffer: {} <{}> \n", @typeName(@typeOf(bufferType)), self.handle);
             debug_gl.assertNoError();
         }
 
         //TODO: Make sure we can only call this if the buffer is bound
         pub fn setData(self: Self, comptime T: type, data: []T) void {
             const bufferLen = @intCast(c_long, data.len * @sizeOf(T));
-            print("Buffer type size: {}, Buffer len  {}\n", @intCast(i32, @sizeOf(T)), bufferLen);
             c.glBufferData(bufferType, bufferLen, &data[0], c.GL_STATIC_DRAW);
             debug_gl.assertNoError();
         }
@@ -162,7 +160,6 @@ pub fn setVertexAttribLayout(comptime T: type) void {
             comptime const stride = @sizeOf(T);
             c.glEnableVertexAttribArray(0);
             inline for (info.fields) |field, i| {
-                print("Name: {} - {}\n", field.name, @typeName(field.field_type));
 
                 // TODO: Better name than T2
                 const T2 = field.field_type;
@@ -173,15 +170,6 @@ pub fn setVertexAttribLayout(comptime T: type) void {
                         const name = @typeName(T2);
                         comptime const shape = unwrapType(T2);
                         comptime const glType = glTypeForZigType(shape.childType);
-
-                        print(
-                            "Vertex attrib: pos: {}, numComps: {}, childType: {}, offset: {}, stride: {}\n",
-                            position,
-                            shape.numComponents,
-                            @typeName(shape.childType),
-                            @intToPtr(?*const c_void, @byteOffsetOf(T, field.name)),
-                            @intCast(i32, stride)
-                        );
 
                         c.glVertexAttribPointer(
                             position,

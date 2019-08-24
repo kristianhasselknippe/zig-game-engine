@@ -12,8 +12,6 @@ pub fn assertNoError() void {
         const err = c.glGetError();
         if (err != c.GL_NO_ERROR) {
             panic("GL error: {}\n", err);
-        } else {
-            std.debug.warn("No GL error\n");
         }
     }
 }

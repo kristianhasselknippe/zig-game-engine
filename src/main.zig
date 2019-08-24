@@ -66,6 +66,8 @@ pub fn main() anyerror!void {
     c.glfwMakeContextCurrent(window);
     c.glfwSwapInterval(1);
 
+    c.glEnable(c.GL_DEPTH_TEST);
+
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
@@ -103,7 +105,6 @@ pub fn main() anyerror!void {
         roll += 0.02;
 
         for (meshes) |*mesh| {
-            print("Mesh vao: {}\n", mesh.vao);
             mesh.draw(Vertex);
         }
 

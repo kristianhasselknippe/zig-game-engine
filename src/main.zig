@@ -5,7 +5,7 @@ const glm = @import("cglm.zig");
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
-const shader = @import("drawing/shader.zig");
+use @import("drawing/shader.zig");
 use @import("math.zig");
 use @import("mesh.zig");
 
@@ -76,7 +76,7 @@ pub fn main() anyerror!void {
     vao.bind();
     var shouldQuit = false;
 
-    const defaultShader = shader.createDefaultShader() catch @panic("Unable to create default shader");
+    const defaultShader = createDefaultShader() catch @panic("Unable to create default shader");
     const perspective = glm.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
@@ -90,7 +90,12 @@ pub fn main() anyerror!void {
 
     var roll: f32 = 0.0;
 
-    defaultShader.setUniformMat4(c"perspective", perspective);
+    defaultShader.setUniform(
+        c"perspective",
+        UniformTypeId.Mat4x4,
+        UniformPrimitive.Float,
+        @ptrCast([*c]const f32, perspective)
+    );
     const meshes = (try assets.importSomething()).toSlice();
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
@@ -107,7 +112,12 @@ pub fn main() anyerror!void {
         }
 
         const rotation = glm.euler(0, 0, roll);
-        defaultShader.setUniformMat4(c"rotation", rotation);
+        defaultShader.setUniform(
+            c"rotation",
+            UniformTypeId.Mat4x4,
+            UniformPrimitive.Float,
+            @ptrCast([*c]const f32, rotation)
+        );
         roll += 0.02;
 
         for (meshes) |*mesh| {

@@ -47,11 +47,17 @@ pub fn trigType(comptime T: type) TrigType {
                 }
             };
         },
+        .Array => |a| {
+            const t = switch (a.len) {
+                1,2,3,4 => TrigTypeId.Vec,
+                else => TrigTypeId.Mat,
+            };
+        },
         else => @compileError("Unsupported trig type")
     }
 }
 
-test "trigTypeTests" {
+test "trigTypeVec" {
     const vec = Vec3(f32) {
         .x = 30,
         .y = 20,
@@ -59,4 +65,10 @@ test "trigTypeTests" {
     };
     const res1 = trigType(@typeOf(vec));
     assert(res1 == TrigType.Vec);
+}
+
+test "trigTypeMat" {
+    const mat = [4]f32 { 1, 2, 3, 4 };
+    const res1 = trigType(@typeOf(mat));
+    assert(res1 == TrigType.Mat);
 }

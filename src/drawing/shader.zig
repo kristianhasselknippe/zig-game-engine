@@ -72,9 +72,21 @@ const ShaderProgram = struct {
         return c.glGetUniformLocation(program.handle, name);
     }
 
-    pub fn setUniformMat4(program: ShaderProgram, name: [*c]const u8, matrix: *Mat4) void {
+    fn setUniformMat4(program: ShaderProgram, name: [*c]const u8, matrix: *Mat4) void {
         const loc = getUniformLocation(program, name);
         c.glProgramUniformMatrix4fv(program.handle, @intCast(c.GLint, loc), 1, 0, @ptrCast([*c]const f32, matrix));
+    }
+
+    pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) !void {
+        const loc = getUniformLocation(program, name);
+        switch (@typeInfo(val)) {
+            .Float => {
+                c.glProgramUniform1f(program.handle, @intCast(c.GLint, loc), val);
+            },
+            .Int => {
+                c.glProgramUniform1i(program.handle, @intCast(c.GLint, loc), val);
+            }
+        }
     }
 
 };

@@ -5,6 +5,7 @@ const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const builtin = @import("builtin");
 const assert = std.debug.assert;
+use @import("../typeUtils.zig");
 
 pub const VertexArray = struct {
     handle: c.GLuint,
@@ -74,19 +75,7 @@ fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
     return s.fields.len;
 }
 
-fn ensureAllFieldsHaveTheSameSize(comptime structInfo: builtin.TypeInfo.Struct) bool {
-    if (structInfo.fields.len == 0) {
-        return true;
-    }
 
-    comptime const firstFieldType = structInfo.fields[0].field_type;
-    inline for (structInfo.fields) |field| {
-        if (field.field_type != firstFieldType) {
-            return false;
-        }
-    }
-    return true;
-}
 
 const Shape = struct {
     numComponents: usize,

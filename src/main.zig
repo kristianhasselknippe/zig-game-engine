@@ -80,6 +80,14 @@ pub fn main() anyerror!void {
     const perspective = glm.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
+    var trans = glm.allocMat4();
+    var to = Vec3(f32) {
+        .x = 10,
+        .y = 5,
+        .z = 2
+    };
+    const theTrans = glm.translate(trans, to);
+
     var roll: f32 = 0.0;
 
     defaultShader.setUniformMat4(c"perspective", perspective);

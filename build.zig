@@ -23,11 +23,15 @@ pub fn build(b: *Builder) void {
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 
-    const test_step = b.step("test", "Test the app");
-    const cglmTests = b.addTest("./src/cglm.zig");
-    test_step.dependOn(&cglmTests.step);
-    const drawingTests = b.addTest("./src/drawing/drawing.zig");
-    test_step.dependOn(&drawingTests.step);
+    {
+        var t = b.addTest("test.zig");
+        t.linkSystemLibrary("c");
+        t.linkSystemLibrary("glfw");
+        t.linkSystemLibrary("epoxy");
+        t.linkSystemLibrary("assimp");
+        t.linkSystemLibrary("cglm");
+        const test_step = b.step("test", "Run all tests");
+        test_step.dependOn(&t.step);
+    }
 
-    test_step.dependOn(b.getInstallStep());
 }

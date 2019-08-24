@@ -51,39 +51,49 @@ pub fn euler(pitch: f32, yaw: f32, roll: f32) *Mat4 {
 
 pub fn translation(by: Vec3(f32)) *Mat4 {
     const out = allocMat4();
-    out[3][0] += by.x;
-    out[3][1] += by.y;
-    out[3][2] += by.z;
+    out[0][3] += by.x;
+    out[1][3] += by.y;
+    out[2][3] += by.z;
+
+    out[0][0] = 1;
+    out[1][1] = 1;
+    out[2][2] = 1;
+    out[3][3] = 1;
     return out;
 }
 
 pub fn translate(mat: *Mat4, by: Vec3(f32)) *Mat4 {
-    mat[3][0] += by.x;
-    mat[3][1] += by.y;
-    mat[3][2] += by.z;
+    mat[0][3] += by.x;
+    mat[1][3] += by.y;
+    mat[2][3] += by.z;
     return mat;
 }
 
+//  pub fn mul(a: *Mat4, b: *Mat4) *Mat4 {
+//     var out = allocMat4();
+//     c.glmc_mat4_mul(a,b,out);
+//     return out;
+// }
+
 pub fn mul(a: *Mat4, b: *Mat4) *Mat4 {
-    var out = allocMat4();
-    c.glmc_mat4_mul(a,b,out);
-    return out;
+    const res = allocMat4();
+    var i: usize = 0;
+    while (i < a.len):(i+=1) {
+        var j: usize = 0;
+        while (j < a.len):(j+=1) {
+            var k: usize = 0;
+            while (k < a.len):(k+=1) {
+                res[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+    return res;
 }
 
-test "mat4_mul" {
-    const m1 = allocMat4();
-    const m2 = allocMat4();
-    m1[0][0] = 5;
-    m1[1][1] = 2;
-    m1[0][3] = 10;
-    m2[0][0] = 3;
-    m2[1][1] = 2;
-    m2[2][1] = 2;
-    const out = mul(m1, m2);
-    assert(out[0][0] == 15);
-    assert(out[1][1] == 4);
-    assert(out[2][1] == 4);
-    assert(out[0][3] == 30);
+test "cglm.euler" {
+    const foo = euler(150, 0, 0);
+    print("\nEuler\n");
+    printMat4(foo.*);
 }
 
 test "cglm.translation" {
@@ -93,9 +103,12 @@ test "cglm.translation" {
         .z = 2
     };
     const foo = translation(vec);
+    print("\nTranslation\n");
+    printMat4(foo.*);
     assert(foo[3][0] == 10);
     assert(foo[3][1] == 5);
     assert(foo[3][2] == 2);
+    
 }
 
 test "cglm.translate" {
@@ -109,6 +122,25 @@ test "cglm.translate" {
     assert(foo[3][0] == 10);
     assert(foo[3][1] == 5);
     assert(foo[3][2] == 2);
+}
+
+test "mat4_mul" {
+    const m1 = allocMat4();
+    const m2 = allocMat4();
+    m1[0][0] = 5;
+    m1[1][1] = 2;
+    m1[0][3] = 10;
+    m2[0][0] = 3;
+    m2[1][1] = 2;
+    m2[2][1] = 2;
+    const out = mul(m1, m2);
+
+    print("\n");
+    printMat4(out.*);
+    assert(out[0][0] == 15);
+    assert(out[1][1] == 4);
+    assert(out[2][1] == 4);
+    assert(out[0][3] == 30);
 }
 
 test "cglm.translateBy" {

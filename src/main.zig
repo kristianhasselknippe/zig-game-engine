@@ -44,11 +44,6 @@ fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
-const VertexAttribLayout = struct {
-    pos: Vertex,
-    texCoord: TexCoord
-};
-
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
 
@@ -77,7 +72,7 @@ pub fn main() anyerror!void {
     var shouldQuit = false;
 
     const defaultShader = createDefaultShader() catch @panic("Unable to create default shader");
-    const perspective = glm.perspective(1.0, 1, 0.1, 1000);
+    const projection = glm.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
     var trans = glm.allocMat4();
@@ -88,12 +83,10 @@ pub fn main() anyerror!void {
     };
     const theTrans = glm.translate(trans, to);
 
+    var yaw: f32 = 0.0;
     var roll: f32 = 0.0;
+    var zoom: f32 = 0.0;
 
-    defaultShader.setUniform(
-        c"perspective",
-        perspective
-    );
     const meshes = (try assets.importSomething()).toSlice();
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
@@ -109,11 +102,44 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const rotation = glm.euler(0, 0, roll);
+        print("=====START - projection====\n");
+        for (projection) |x|{
+            for (x)|y|{
+                print("{}", y);
+            }
+            print("\n");
+        }
+        print("=====end - projection====\n");
+
+        const view = glm.translation(Vec3(f32).create(0,0,100 * @cos(f32, zoom)));
+        zoom += 0.03;
+        print("=====START - view====\n");
+        for (view) |x|{
+            for (x)|y|{
+                print("{}", y);
+            }
+            print("\n");
+        }
+        print("============\n");
+        const model = glm.euler(0, yaw, roll);
+
+        const mv = glm.mul(view, model);
+
+        const mvp = glm.mul(projection, view);
+        print("=====START - mvp====\n");
+        for (mvp) |x|{
+            for (x)|y|{
+                print("{}", y);
+            }
+            print("\n");
+        }
+        print("=====end - mvp====\n");
+
         defaultShader.setUniform(
-            c"rotation", rotation
+            c"mvp", mvp
         );
         roll += 0.02;
+        yaw += 0.01;
 
         for (meshes) |*mesh| {
             mesh.draw(Vertex);

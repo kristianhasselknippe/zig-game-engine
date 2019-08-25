@@ -9,16 +9,26 @@ use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() !ArrayList(Mesh) {
-    const objFile = @embedFile("./assets/models/teapot.fbx");
-    const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |
-                                               @enumToInt(c.aiProcess_Triangulate) |
-                                               @enumToInt(c.aiProcess_GenUVCoords) |
-                                               @enumToInt(c.aiProcess_JoinIdenticalVertices) |
-                                               @enumToInt(c.aiProcess_SortByPType), c"fbx");
+    const scene = c.aiImportFile(
+        c"./assets/models/lambo/Lamborghini_Aventador.fbx",
+        @enumToInt(c.aiProcess_CalcTangentSpace) |
+            @enumToInt(c.aiProcess_Triangulate) |
+            @enumToInt(c.aiProcess_GenUVCoords) |
+            @enumToInt(c.aiProcess_JoinIdenticalVertices) |
+            @enumToInt(c.aiProcess_SortByPType)
+    );
+    if (scene == null) {
+        print("error string: ");
+        _ = c.puts(c.aiGetErrorString());
+        print("\n");
+    }
+    print("Scene {}\n", scene);
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
     //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
 
     var meshes = ArrayList(Mesh).init(allocator);
+
+    print("Num textures: {}\n", @intCast(i32, aiScene.mNumTextures));
 
     var i: usize = 0;
     while (i < aiScene.mNumMeshes) : (i += 1) {

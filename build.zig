@@ -15,6 +15,9 @@ pub fn build(b: *Builder) void {
         exe.linkSystemLibrary("unwind");
     }
 
+    exe.addCSourceFile("stb_image/stb_image_impl.c", [_][]const u8{"-std=c99"});
+    exe.addIncludeDir("stb_image");
+
     exe.install();
 
     const run_cmd = exe.run();

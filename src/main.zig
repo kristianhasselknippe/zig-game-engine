@@ -90,7 +90,7 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const view = Mat4.translation(0,0,-2 -10.0 * fabs(@cos(f32, zoom)));
+        const view = Mat4.translation(0,0,-600 -100.0 * fabs(@cos(f32, zoom)));
         zoom += 0.01;
 
         const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));

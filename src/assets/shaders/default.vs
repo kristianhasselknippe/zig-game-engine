@@ -13,5 +13,5 @@ void main()
 {
 	color = vec4(norm, 1.0);
 	mat4 mvp = projection;// * model;
-	gl_Position =  mvp * vec4(pos.xy, pos.z - 450, 1.0);
+	gl_Position =  mvp * vec4(pos.xy, pos.z - 10, 1.0);
 }

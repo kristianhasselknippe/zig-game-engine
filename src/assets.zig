@@ -9,7 +9,7 @@ use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() !ArrayList(Mesh) {
-    const objFile = @embedFile("./assets/models/lambo/Lamborghini_Aventador.fbx");
+    const objFile = @embedFile("./assets/models/teapot.fbx");
     const scene = c.aiImportFileFromMemory(&objFile[0], objFile.len, @enumToInt(c.aiProcess_CalcTangentSpace) |
                                                @enumToInt(c.aiProcess_Triangulate) |
                                                @enumToInt(c.aiProcess_GenUVCoords) |

@@ -14,10 +14,10 @@ pub fn importSomething() !ArrayList(Mesh) {
         c"./src/assets/models/lambo/Lamborghini_Aventador.fbx",
         @enumToInt(c.aiProcess_CalcTangentSpace) |
             @enumToInt(c.aiProcess_Triangulate) |
-            @enumToInt(c.aiProcess_GenUVCoords) |
             @enumToInt(c.aiProcess_JoinIdenticalVertices) |
             @enumToInt(c.aiProcess_SortByPType)
     );
+    //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
     if (scene == null) {
         print("error string: ");
         _ = c.puts(c.aiGetErrorString());
@@ -25,11 +25,18 @@ pub fn importSomething() !ArrayList(Mesh) {
     }
     print("Scene {}\n", scene);
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
-    //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
+
 
     var meshes = ArrayList(Mesh).init(allocator);
 
     print("Num textures: {}\n", @intCast(i32, aiScene.mNumTextures));
+    print("Num materials: {}\n", @intCast(i32, aiScene.mNumMaterials));
+
+    var matIndex: usize = 0;
+    while (matIndex < aiScene.mNumMaterials) : (matIndex += 1) {
+        const material = aiScene.mMaterials[matIndex];
+        print("   material: {}\n", material);
+    }
 
     var i: usize = 0;
     while (i < aiScene.mNumMeshes) : (i += 1) {
@@ -47,7 +54,8 @@ pub fn importSomething() !ArrayList(Mesh) {
         print("Mesh mNumFaces: {}\n", @intCast(i32, mesh.mNumFaces));
         print("Mesh mFaces: {}\n", @ptrToInt(mesh.mFaces));
 
-        print("Mesh name {}\n", mesh.mName);
+        // TODO: Get AiString printing to work again
+        //print("Mesh name {}\n", mesh.mName);
 
         var vertices = try allocator.alloc(Vertex, mesh.mNumVertices);
         var vertIndex: usize = 0;

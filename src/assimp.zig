@@ -4,7 +4,80 @@ const c = @import("c.zig");
 
 pub const AiLight = @OpaqueType();
 
-pub const AiMaterial = @OpaqueType();
+pub const AiPropertyTypeInfo = extern enum {
+    /// Array of single-precision (32 Bit) floats
+    ///
+    ///It is possible to use aiGetMaterialInteger[Array]() (or the C++-API
+    ///aiMaterial::Get()) to query properties stored in floating-point format.
+    ///The material system performs the type conversion automatically.
+    aiPTI_Float   = 0x1,
+
+    ///Array of double-precision (64 Bit) floats
+    ///
+    ///It is possible to use aiGetMaterialInteger[Array]() (or the C++-API
+    ///aiMaterial::Get()) to query properties stored in floating-point format.
+    ///The material system performs the type conversion automatically.
+    aiPTI_Double   = 0x2,
+
+    /// The material property is an aiString.
+    ///
+    /// Arrays of strings aren't possible, aiGetMaterialString() (or the
+    /// C++-API aiMaterial::Get()) *must* be used to query a string property.
+    aiPTI_String  = 0x3,
+
+    /// Array of (32 Bit) integers
+    ///
+    /// It is possible to use aiGetMaterialFloat[Array]() (or the C++-API
+    /// aiMaterial::Get()) to query properties stored in integer format.
+    /// The material system performs the type conversion automatically.
+    aiPTI_Integer = 0x4,
+
+
+    /// Simple binary buffer, content undefined. Not convertible to anything.
+    aiPTI_Buffer  = 0x5,
+};
+
+pub const AiMaterialProperty = extern struct {
+    ///Specifies the name of the property (key)
+    ///Keys are generally case insensitive.
+    mKey: AiString,
+
+    /// Textures: Specifies their exact usage semantic.
+    /// For non-texture properties, this member is always 0
+    /// (or, better-said, #aiTextureType_NONE).
+    mSemantic: c_uint,
+
+    /// Textures: Specifies the index of the texture.
+    /// For non-texture properties, this member is always 0.
+    mIndex: c_uint,
+
+    /// Size of the buffer mData is pointing to, in bytes.
+    /// This value may not be 0.
+    mDataLength: c_uint,
+
+    /// Type information for the property.
+    ///
+    /// Defines the data layout inside the data buffer. This is used
+    /// by the library internally to perform debug checks and to
+    /// utilize proper type conversions.
+    /// (It's probably a hacky solution, but it works.)
+    mType: AiPropertyTypeInfo,
+
+    /// Binary buffer to hold the property's value.
+    /// The size of the buffer is always mDataLength.
+    mData: [*]const u8,
+};
+
+pub const AiMaterial = struct {
+    /// List of all material properties loaded.
+    mProperties: [*]*AiMaterialProperty,
+
+    /// Number of properties in the data base
+    mNumProperties: c_uint,
+
+    /// Storage allocated
+    mNumAllocated: c_uint,
+};
 
 pub const AiReal = c.ai_real;
 
@@ -21,7 +94,10 @@ pub const AiColor4D = extern struct {
     a: AiReal,
 };
 
-pub const AiString = []u8;
+pub const AiString = extern struct {
+    length: isize,
+    data: [*]u8,
+};
 
 pub const AiFace = extern struct {
     mNumIndices: c_uint,
@@ -230,7 +306,7 @@ pub const AiScene = extern struct {
     ///array. The array is mNumMaterials in size. If the
     ///AI_SCENE_FLAGS_INCOMPLETE flag is not set there will always
     ///be at least ONE material.
-    mMaterials: **AiMaterial,
+    mMaterials: [*]*AiMaterial,
 
     ///The number of animations in the scene.
     mNumAnimations: c_uint,
@@ -249,7 +325,7 @@ pub const AiScene = extern struct {
     ///Not many file formats embed their textures into the file.
     ///An example is Quake's MDL format (which is also used by
     ///some GameStudio versions)
-    mTextures: **AiTexture,
+    mTextures: [*]*AiTexture,
 
     ///The number of light sources in the scene. Light sources
     ///are fully optional, in most cases this attribute will be 0

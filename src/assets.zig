@@ -32,10 +32,21 @@ pub fn importSomething() !ArrayList(Mesh) {
     print("Num textures: {}\n", @intCast(i32, aiScene.mNumTextures));
     print("Num materials: {}\n", @intCast(i32, aiScene.mNumMaterials));
 
+    print("Size of aiScene: {}\n", @intCast(i32, @sizeOf(assimp.AiScene)));
+    print("Size of aiMaterial: {}\n", @intCast(i32, @sizeOf(assimp.AiMaterial)));
+    print("Size of aiMaterialProp: {}\n", @intCast(i32, @sizeOf(assimp.AiMaterialProperty)));
+
     var matIndex: usize = 0;
     while (matIndex < aiScene.mNumMaterials) : (matIndex += 1) {
         const material = aiScene.mMaterials[matIndex];
-        print("   material: {}\n", material);
+        print("   material: num props {}\n", material.mNumProperties);
+        var propIndex: usize = 0;
+        while (propIndex < material.mNumProperties): (propIndex += 1) {
+            const materialProp = material.mProperties[propIndex];
+            print("     property type: {}, dataLen: {}\n", @enumToInt(materialProp.mType), materialProp.mDataLength);
+            
+            
+        }
     }
 
     var i: usize = 0;

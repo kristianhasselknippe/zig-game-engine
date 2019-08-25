@@ -4,7 +4,7 @@ const c = @import("c.zig");
 
 pub const AiLight = @OpaqueType();
 
-pub const AiPropertyTypeInfo = extern enum {
+pub const AiPropertyTypeInfo = extern enum(i32) {
     /// Array of single-precision (32 Bit) floats
     ///
     ///It is possible to use aiGetMaterialInteger[Array]() (or the C++-API
@@ -68,7 +68,7 @@ pub const AiMaterialProperty = extern struct {
     mData: [*]const u8,
 };
 
-pub const AiMaterial = struct {
+pub const AiMaterial = extern struct {
     /// List of all material properties loaded.
     mProperties: [*]*AiMaterialProperty,
 
@@ -94,9 +94,11 @@ pub const AiColor4D = extern struct {
     a: AiReal,
 };
 
+pub const MAXLEN = 1024;
+
 pub const AiString = extern struct {
     length: isize,
-    data: [*]u8,
+    data: [MAXLEN]u8,
 };
 
 pub const AiFace = extern struct {
@@ -250,7 +252,7 @@ pub const AiMesh = extern struct {
     ///     aids the caller at recovering the original mesh
     ///     partitioning.
     ///  - Vertex animations refer to meshes by their names.
-    mName: *AiString,
+    mName: AiString,
 
     ///The number of attachment meshes. Note! Currently only works with Collada loader. */
     mNumAnimMeshes: c_uint,
@@ -315,7 +317,7 @@ pub const AiScene = extern struct {
     ///
     ///All animations imported from the given file are listed here.
     ///The array is mNumAnimations in size.
-    mAnimations: **AiAnimation,
+    mAnimations: [*]*AiAnimation,
 
     ///The number of textures embedded into the file
     mNumTextures: c_uint,
@@ -335,7 +337,7 @@ pub const AiScene = extern struct {
     ///
     ///All light sources imported from the given file are
     ///listed here. The array is mNumLights in size.
-    mLights: **AiLight,
+    mLights: [*]*AiLight,
 
     ///The number of cameras in the scene. Cameras
     ///are fully optional, in most cases this attribute will be 0
@@ -347,7 +349,7 @@ pub const AiScene = extern struct {
     ///The Givenarray is mNumCameras in size. The first camera in the
     ///array (if existing) is the default camera view into
     ///the scene.
-    mCameras: **AiCamera,
+    mCameras: [*]*AiCamera,
 
     ///@brief  The global metadata assigned to the scene itself.
     ///

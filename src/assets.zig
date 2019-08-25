@@ -9,8 +9,9 @@ use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() !ArrayList(Mesh) {
+    // TODO: Make this path location independent
     const scene = c.aiImportFile(
-        c"./assets/models/lambo/Lamborghini_Aventador.fbx",
+        c"./src/assets/models/lambo/Lamborghini_Aventador.fbx",
         @enumToInt(c.aiProcess_CalcTangentSpace) |
             @enumToInt(c.aiProcess_Triangulate) |
             @enumToInt(c.aiProcess_GenUVCoords) |

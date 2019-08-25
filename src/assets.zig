@@ -44,17 +44,17 @@ pub fn importSomething() !ArrayList(Mesh) {
         var vertIndex: usize = 0;
 
         while (vertIndex < mesh.mNumVertices) : (vertIndex += 1) {
-            const position = Vec3(f32);
+            const position = Vec3;
             vertices[vertIndex] = Vertex {
-                .position = Vec3(f32) {
-                    .x = mesh.mVertices[vertIndex].x,
-                    .y = mesh.mVertices[vertIndex].y,
-                    .z = mesh.mVertices[vertIndex].z,
-                },
-                .uvCoord = Vec2(f32) {
-                    .x = mesh.mTextureCoords[0][vertIndex].x,
-                    .y = mesh.mTextureCoords[0][vertIndex].y
-                }
+                .position = Vec3 { .data = [3]f32{
+                    mesh.mVertices[vertIndex].x,
+                    mesh.mVertices[vertIndex].y,
+                    mesh.mVertices[vertIndex].z,
+                }},
+                .uvCoord = Vec2 { .data = [2]f32{
+                    mesh.mTextureCoords[0][vertIndex].x,
+                    mesh.mTextureCoords[0][vertIndex].y
+                }}
             };
         }
 

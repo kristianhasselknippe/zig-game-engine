@@ -1,7 +1,6 @@
 const std = @import("std");
 const print = std.debug.warn;
 const c = @import("c.zig");
-const glm = @import("cglm.zig");
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
@@ -72,16 +71,8 @@ pub fn main() anyerror!void {
     var shouldQuit = false;
 
     const defaultShader = createDefaultShader() catch @panic("Unable to create default shader");
-    const projection = glm.perspective(1.0, 1, 0.1, 1000);
-    //TODO: Make sure we free the perspective matrix
-
-    var trans = glm.allocMat4();
-    var to = Vec3(f32) {
-        .x = 10,
-        .y = 5,
-        .z = 2
-    };
-    const theTrans = glm.translate(trans, to);
+    const projection = Mat4.perspective(1.0, 1, 0.1, 1000);
+    //TODO: Make sure we free the perspective matrix    
 
     var yaw: f32 = 0.0;
     var roll: f32 = 0.0;
@@ -103,40 +94,44 @@ pub fn main() anyerror!void {
         }
 
         print("=====START - projection====\n");
-        for (projection) |x|{
+        for (projection.data) |x|{
             for (x)|y|{
-                print("{}", y);
+                print("{}, ", y);
             }
             print("\n");
         }
         print("=====end - projection====\n");
 
-        const view = glm.translation(Vec3(f32).create(0,0,100 * @cos(f32, zoom)));
+        const view = Mat4.translate(mat4_identity, 0,0,-100 * @cos(f32, zoom));
         zoom += 0.03;
         print("=====START - view====\n");
-        for (view) |x|{
+        for (view.data) |x|{
             for (x)|y|{
-                print("{}", y);
+                print("{}, ", y);
             }
             print("\n");
         }
         print("============\n");
-        const model = glm.euler(0, yaw, roll);
+        const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
 
-        const mv = glm.mul(view, model);
-
-        const mvp = glm.mul(projection, view);
-        print("=====START - mvp====\n");
-        for (mvp) |x|{
-            for (x)|y|{
-                print("{}", y);
-            }
-            print("\n");
-        }
-        print("=====end - mvp====\n");
+        //const mvp = projection.mult(view);
+        //print("=====START - mvp====\n");
+        //for (mvp.data) |x|{
+        //    for (x)|y|{
+        //        print("{}, ", y);
+        //    }
+        //    print("\n");
+        //}
+        //print("=====end - mvp====\n");
 
         defaultShader.setUniform(
-            c"mvp", mvp
+            c"mvp", projection
+        );
+        defaultShader.setUniform(
+            c"translation", view
+        );
+        defaultShader.setUniform(
+            c"move", -400 * @cos(f32, zoom)
         );
         roll += 0.02;
         yaw += 0.01;

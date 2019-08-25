@@ -2,7 +2,7 @@ const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const std = @import("std");
 const allocator = std.heap.c_allocator;
-const Mat4 = @import("../cglm.zig").Mat4;
+use @import("../math.zig");
 
 const Shader = struct {
     handle: c.GLuint,
@@ -128,8 +128,9 @@ const ShaderProgram = struct {
 
     pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) void {
         switch (@typeOf(val)) {
-            *Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, @ptrCast([*c]const f32, val)),
-            else => @compileError("Unsupported uniform type")
+            Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, @ptrCast([*c]const f32, &val)),
+            f32 => setUniformInternal(program, name, UniformTypeId.Scalar, UniformPrimitive.Float, val),
+            else => @compileError("Unsupported uniform type " ++ @typeName(@typeOf(val)))
         }
         
     }

@@ -4,5 +4,4 @@ pub use @cImport({
     @cInclude("assimp/cimport.h");
     @cInclude("assimp/scene.h");
     @cInclude("assimp/postprocess.h");
-    @cInclude("cglm/call.h");
 });

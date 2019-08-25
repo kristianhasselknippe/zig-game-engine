@@ -6,8 +6,21 @@ use @import("drawing/drawing.zig");
 pub const TexCoord = Vec2(f32);
 
 pub const Vertex = struct {
-    position: Vec3(f32),
-    uvCoord: Vec2(f32),
+    position: Vec3,
+    uvCoord: Vec2,
+};
+
+// TODO: Made ^^ work instead of needing this
+const VertexLayout = struct {
+    position: struct {
+        x: f32,
+        y: f32,
+        z: f32,
+    },
+    uvCoord: struct {
+        u: f32,
+        v: f32,
+    },
 };
 
 pub const Element = c.GLuint;
@@ -42,7 +55,7 @@ pub const Mesh = struct {
         var this = self;
         const numTriangles = @divFloor(@intCast(i32, self.indices.len), 3);
         this.bind();
-        setVertexAttribLayout(vertexLayout);
+        setVertexAttribLayout(VertexLayout);
         drawElements(numTriangles);
     }
 };

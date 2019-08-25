@@ -91,6 +91,15 @@ pub const Mat4 = struct {
         } };
     }
 
+    pub fn translation(x: f32, y: f32, z: f32) Mat4 {
+        return Mat4{ .data = [_][4]f32{
+            [_]f32{ 1.0, 0.0, 0.0, 0.0 },
+            [_]f32{ 0.0, 1.0, 0.0, 0.0 },
+            [_]f32{ 0.0, 0.0, 1.0, 0.0 },
+            [_]f32{ x, y, z, 1.0 },
+        }};
+    }
+
     pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32) Mat4 {
         const yScale = 1.0 / math.tan(fov / 2);
         const xScale = yScale / aspect;

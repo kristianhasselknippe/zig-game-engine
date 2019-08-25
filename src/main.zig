@@ -83,12 +83,7 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const model = Mat4{ .data = [_][4]f32{
-            [_]f32{ 1.0, 0.0, 0.0, 0.0 },
-            [_]f32{ 0.0, 1.0, 0.0, 0.0 },
-            [_]f32{ 0.0, 0.0, 1.0, 0.0 },
-            [_]f32{ 0.0, 0.0, -2 -10.0 * fabs(@cos(f32, zoom)), 1.0 },
-            } };
+        const model = Mat4.translation(0,0,-2 -10.0 * fabs(@cos(f32, zoom)));
         zoom += 0.01;
 
         //const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));

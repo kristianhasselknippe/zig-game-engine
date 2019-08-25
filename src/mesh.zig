@@ -59,7 +59,7 @@ pub const Mesh = struct {
 
     pub fn draw(self: *Self, comptime vertexLayout: type) void {
         var this = self;
-        const numTriangles = @divFloor(@intCast(i32, self.indices.len), 3);
+        const numTriangles = @intCast(i32, self.indices.len);
         this.bind();
         setVertexAttribLayout(VertexLayout);
         drawElements(numTriangles);

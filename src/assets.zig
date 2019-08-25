@@ -18,9 +18,6 @@ pub fn importSomething() !ArrayList(Mesh) {
     const aiScene = @ptrCast(*const assimp.AiScene, scene);
     //defer c.aiReleaseImport(scene); // TODO: Why does this segfault
 
-    print("Size of u16: {}\n", @intCast(usize, @sizeOf(u16)));
-    print("Size of c_uint: {}\n", @intCast(usize, @sizeOf(c_uint)));
-
     var meshes = ArrayList(Mesh).init(allocator);
 
     var i: usize = 0;
@@ -29,13 +26,14 @@ pub fn importSomething() !ArrayList(Mesh) {
 
         print("Primitive type: {}\n", mesh.mPrimitiveTypes);
 
-        print("Mesh mVertices: {}\n", @ptrToInt(mesh.mVertices));
+        print("Mesh mNumVertices: {}\n", @intCast(i32, mesh.mNumVertices));
         print("Mesh mNormals: {}\n", @ptrToInt(mesh.mNormals));
         print("Mesh mTangents: {}\n", @ptrToInt(mesh.mTangents));
         print("Mesh mBitangents: {}\n", @ptrToInt(mesh.mBitangents));
         print("Mesh mColors: {}\n", mesh.mColors);
         print("Mesh mTextureCoords: {}\n", mesh.mTextureCoords[0]);
         print("Mesh mNumUVComponents: {}\n", mesh.mNumUVComponents[0]);
+        print("Mesh mNumFaces: {}\n", @intCast(i32, mesh.mNumFaces));
         print("Mesh mFaces: {}\n", @ptrToInt(mesh.mFaces));
 
         print("Mesh name {}\n", mesh.mName);

@@ -27,9 +27,9 @@ fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_OPENGL_FORWARD_COMPAT, c.GL_TRUE);
     c.glfwWindowHint(c.GLFW_OPENGL_DEBUG_CONTEXT, debug_gl.is_on);
     c.glfwWindowHint(c.GLFW_OPENGL_PROFILE, c.GLFW_OPENGL_CORE_PROFILE);
-    c.glfwWindowHint(c.GLFW_DEPTH_BITS, 0);
+    c.glfwWindowHint(c.GLFW_DEPTH_BITS, 8);
     c.glfwWindowHint(c.GLFW_STENCIL_BITS, 8);
-    c.glfwWindowHint(c.GLFW_RESIZABLE, c.GL_FALSE);
+    c.glfwWindowHint(c.GLFW_RESIZABLE, c.GL_TRUE);
     c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
@@ -52,6 +52,13 @@ pub fn main() anyerror!void {
 
     c.glEnable(c.GL_DEPTH_TEST);
     c.glDepthFunc(c.GL_LESS);
+
+    c.glDisable(c.GL_CULL_FACE);
+
+
+    //c.glEnable(c.GL_CULL_FACE);
+    //c.glCullFace(c.GL_FRONT);
+
 
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
@@ -83,16 +90,19 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const model = Mat4.translation(0,0,-2 -10.0 * fabs(@cos(f32, zoom)));
+        const view = Mat4.translation(0,0,-2 -10.0 * fabs(@cos(f32, zoom)));
         zoom += 0.01;
 
-        //const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
+        const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
 
         //const mvp = projection.mult(view);
 
 
         defaultShader.setUniform(
             c"projection", projection
+        );
+        defaultShader.setUniform(
+            c"view", view
         );
         defaultShader.setUniform(
             c"model", model

@@ -94,19 +94,19 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const view = Mat4.translate(mat4_identity, 0,0,3 + 3 * fabs(@cos(f32, zoom)));
+        const model= Mat4.translate(mat4_identity, 0,0,-150 - 30 * fabs(@cos(f32, zoom)));
         zoom += 0.01;
 
-        const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
+        //const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
 
-        const mvp = projection.mult(view);
+        //const mvp = projection.mult(view);
 
 
         defaultShader.setUniform(
             c"projection", projection
         );
         defaultShader.setUniform(
-            c"translation", view
+            c"model", model
         );
         roll += 0.02;
         yaw += 0.01;

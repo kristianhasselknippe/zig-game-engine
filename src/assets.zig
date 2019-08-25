@@ -51,6 +51,11 @@ pub fn importSomething() !ArrayList(Mesh) {
                     mesh.mVertices[vertIndex].y,
                     mesh.mVertices[vertIndex].z,
                 }},
+                .normal = Vec3 { .data = [3]f32{
+                    mesh.mNormals.?[vertIndex].x,
+                    mesh.mNormals.?[vertIndex].y,
+                    mesh.mNormals.?[vertIndex].z,
+                }},
                 .uvCoord = Vec2 { .data = [2]f32{
                     mesh.mTextureCoords[0][vertIndex].x,
                     mesh.mTextureCoords[0][vertIndex].y

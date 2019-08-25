@@ -7,12 +7,18 @@ pub const TexCoord = Vec2(f32);
 
 pub const Vertex = struct {
     position: Vec3,
+    normal: Vec3,
     uvCoord: Vec2,
 };
 
 // TODO: Made ^^ work instead of needing this
 const VertexLayout = struct {
     position: struct {
+        x: f32,
+        y: f32,
+        z: f32,
+    },
+    normal: struct {
         x: f32,
         y: f32,
         z: f32,

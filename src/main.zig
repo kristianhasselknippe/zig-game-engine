@@ -21,17 +21,6 @@ extern fn errorCallback(err: c_int, description: [*c]const u8) void {
     panic("Error: {}\n", description);
 }
 
-var data = [_]Vertex{
-        Vertex{ .x = -1.0, .y = -1.0, .z = 0.0 },
-        Vertex{ .x = 1.0, .y = -1.0, .z = 0.0 },
-        Vertex{ .x = 0.0, .y = 1.0, .z = 0.0 },
-};
-
-var indices = [_]c.GLuint{
-    0, 1, 2,
-};
-
-
 fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MAJOR, 3);
     c.glfwWindowHint(c.GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -73,7 +62,7 @@ pub fn main() anyerror!void {
 
     const defaultShader = createDefaultShader() catch @panic("Unable to create default shader");
     const projection = Mat4.perspective(1.0, 1, 0.1, 1000);
-    //TODO: Make sure we free the perspective matrix    
+    //TODO: Make sure we free the perspective matrix
 
     var yaw: f32 = 0.0;
     var roll: f32 = 0.0;
@@ -94,7 +83,12 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const model= Mat4.translate(mat4_identity, 0,0,-150 - 30 * fabs(@cos(f32, zoom)));
+        const model = Mat4{ .data = [_][4]f32{
+            [_]f32{ 1.0, 0.0, 0.0, 0.0 },
+            [_]f32{ 0.0, 1.0, 0.0, 0.0 },
+            [_]f32{ 0.0, 0.0, 1.0, 0.0 },
+            [_]f32{ 0.0, 0.0, -2 -10.0 * fabs(@cos(f32, zoom)), 1.0 },
+            } };
         zoom += 0.01;
 
         //const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));

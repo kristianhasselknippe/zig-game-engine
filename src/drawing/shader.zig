@@ -128,7 +128,7 @@ const ShaderProgram = struct {
 
     pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) void {
         switch (@typeOf(val)) {
-            Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, @ptrCast([*c]const f32, &val)),
+            Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, val.data[0][0..].ptr),
             f32 => setUniformInternal(program, name, UniformTypeId.Scalar, UniformPrimitive.Float, val),
             else => @compileError("Unsupported uniform type " ++ @typeName(@typeOf(val)))
         }

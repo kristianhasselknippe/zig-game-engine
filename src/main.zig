@@ -1,6 +1,7 @@
 const std = @import("std");
 const print = std.debug.warn;
 const c = @import("c.zig");
+const fabs = std.math.fabs;
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
@@ -93,45 +94,19 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        print("=====START - projection====\n");
-        for (projection.data) |x|{
-            for (x)|y|{
-                print("{}, ", y);
-            }
-            print("\n");
-        }
-        print("=====end - projection====\n");
+        const view = Mat4.translate(mat4_identity, 0,0,3 + 3 * fabs(@cos(f32, zoom)));
+        zoom += 0.01;
 
-        const view = Mat4.translate(mat4_identity, 0,0,-100 * @cos(f32, zoom));
-        zoom += 0.03;
-        print("=====START - view====\n");
-        for (view.data) |x|{
-            for (x)|y|{
-                print("{}, ", y);
-            }
-            print("\n");
-        }
-        print("============\n");
         const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
 
-        //const mvp = projection.mult(view);
-        //print("=====START - mvp====\n");
-        //for (mvp.data) |x|{
-        //    for (x)|y|{
-        //        print("{}, ", y);
-        //    }
-        //    print("\n");
-        //}
-        //print("=====end - mvp====\n");
+        const mvp = projection.mult(view);
+
 
         defaultShader.setUniform(
-            c"mvp", projection
+            c"projection", projection
         );
         defaultShader.setUniform(
             c"translation", view
-        );
-        defaultShader.setUniform(
-            c"move", -400 * @cos(f32, zoom)
         );
         roll += 0.02;
         yaw += 0.01;

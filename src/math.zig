@@ -92,15 +92,14 @@ pub const Mat4 = struct {
     }
 
     pub fn perspective(fov: f32, aspect: f32, near: f32, far: f32) Mat4 {
-        const D2R = math.pi / 180.0;
-        const yScale = 1.0 / math.tan(D2R * fov / 2);
+        const yScale = 1.0 / math.tan(fov / 2);
         const xScale = yScale / aspect;
         const nearmfar = near - far;
         const m = Mat4{ .data = [_][4]f32{
-            [_]f32{xScale,0,0,0},
+            [_]f32{xScale, 0,0,0},
             [_]f32{0,yScale,0,0},
-            [_]f32{0,0,(far+near) / nearmfar, 2*far*near/nearmfar},
-            [_]f32{0,0,-1,0}
+            [_]f32{0,0,(far+near) / nearmfar, -1},
+            [_]f32{0,0,2*far*near/nearmfar,0}
             }};
         return m;
     }

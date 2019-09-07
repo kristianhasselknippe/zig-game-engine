@@ -5,4 +5,7 @@ pub use @cImport({
     @cInclude("assimp/cimport.h");
     @cInclude("assimp/scene.h");
     @cInclude("assimp/postprocess.h");
+    @cDefine("STBI_ONLY_PNG", "");
+    @cDefine("STBI_NO_STDIO", "");
+    @cInclude("stb_image.h");
 });

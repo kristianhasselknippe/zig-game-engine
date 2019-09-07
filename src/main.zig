@@ -8,6 +8,7 @@ const drawing = @import("drawing/drawing.zig");
 use @import("drawing/shader.zig");
 use @import("math.zig");
 use @import("mesh.zig");
+use @import("image.zig");
 
 const debug = std.debug.warn;
 const panic = std.debug.panic;
@@ -82,6 +83,9 @@ pub fn main() anyerror!void {
     for (meshes) |*mesh| {
         mesh.uploadData();
     }
+
+    const theImage = PngImage.create(@embedFile("./assets/testimg.png"));
+    print("We have loaded an image \n");
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);

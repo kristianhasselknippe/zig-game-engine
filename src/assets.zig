@@ -43,9 +43,27 @@ pub fn importSomething() !ArrayList(Mesh) {
         var propIndex: usize = 0;
         while (propIndex < material.mNumProperties): (propIndex += 1) {
             const materialProp = material.mProperties[propIndex];
-            print("     property type: {}, dataLen: {}\n", @enumToInt(materialProp.mType), materialProp.mDataLength);
-            
-            
+            _ = c.printf(c"    Material key: %s\n", &materialProp.mKey.data[0]);
+
+            const mSemanticIntValue = @enumToInt(materialProp.mSemantic);
+            print("     Texture type: {}\n", materialProp.mSemantic);
+            const aiti = assimp.AiPropertyTypeInfo;
+
+            // Continue: We need to implement some get* functions
+            // from the assimp c api. A bit tricky to get it to work correctly.
+            switch (materialProp.mType) {
+                aiti.aiPTI_Float => {
+                },
+                aiti.aiPTI_Double => {
+                },
+                aiti.aiPTI_String => {
+                },
+                aiti.aiPTI_Integer => {
+                },
+                aiti.aiPTI_Buffer => {
+                },
+                else => unreachable
+            }
         }
     }
 

@@ -76,7 +76,7 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
     var zoom: f32 = 0.0;
 
-    const meshes = (try assets.importSomething()).toSlice();
+    const meshes = assets.importSomething().toSlice();
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 

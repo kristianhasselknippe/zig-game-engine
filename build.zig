@@ -15,11 +15,11 @@ pub fn build(b: *Builder) void {
         exe.linkSystemLibrary("unwind");
     }
 
+    exe.addCSourceFile("asset_loader/asset_loader_impl.c", [_][]const u8{"-std=c99"});
+    exe.addIncludeDir("asset_loader");
+
     exe.addCSourceFile("stb_image/stb_image_impl.c", [_][]const u8{"-std=c99"});
     exe.addIncludeDir("stb_image");
-
-    exe.addCSourceFile("asset_loader/asset_loader.c", [_][]const u8{"-std=c99"});
-    exe.addIncludeDir("asset_loader");
 
     exe.install();
 

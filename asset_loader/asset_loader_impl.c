@@ -1,4 +1,5 @@
 #include "asset_loader.h"
+#include <stdlib.h>
 
 extern bool importAssetFile(const char* file_content, Mesh* out) {
 	const struct aiScene* scene = aiImportFile(file_content,
@@ -13,11 +14,36 @@ extern bool importAssetFile(const char* file_content, Mesh* out) {
 	}
 
 	printf("Number of meshes: %i\n", scene->mNumMeshes);
-	// Now we can access the file's contents
-	Mesh mesh = {
-				 .vertices = NULL,
-				 .elements = NULL
-	};
+
+	for (int i = 0; i < scene->mNumMeshes; i++){
+		// Now we can access the file's contents
+		struct aiMesh* mesh = scene->mMeshes[i];
+		Vertex* vertices = malloc(sizeof(Vertex) * mesh->mNumVertices);
+		for (int x = 0; x < mesh->mNumVertices; x++) {
+			vertices[x].position.x = mesh->mVertices[x].x;
+			vertices[x].position.y = mesh->mVertices[x].y;
+			vertices[x].position.z = mesh->mVertices[x].z;
+			vertices[x].normal.x = mesh->mNormals[x].x;
+			vertices[x].normal.y = mesh->mNormals[x].y;
+			vertices[x].normal.z = mesh->mNormals[x].z;
+			vertices[x].uv.x = mesh->mTextureCoords[0][x].x;
+			vertices[x].uv.y = mesh->mTextureCoords[0][x].y;
+		}
+
+		unsigned int* elements = malloc(sizeof(unsigned int) * mesh->mNumFaces * 3);
+		for (int faceIndex = 0; faceIndex < mesh->mNumFaces; faceIndex++) {
+			struct aiFace face = mesh->mFaces[faceIndex];
+			for (int elementIndex = 0; elementIndex < face.mNumIndices; elementIndex++) {
+				elements[(faceIndex * 3) + elementIndex] = face.mIndices[elementIndex];
+			}
+		}
+
+		Mesh ret = {
+			.vertices = vertices,
+			.elements = elements
+		};
+	}
+
 	// We're done. Release all resources associated with this import
 	aiReleaseImport( scene);
 	return true;

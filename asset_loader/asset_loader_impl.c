@@ -1,7 +1,8 @@
 #include "asset_loader.h"
 #include <stdlib.h>
 
-extern bool importAssetFile(const char* file_content, Mesh* out) {
+extern bool importAssetFile(const char* file_content) {
+	printf("Trying to make something happen \n");
 	const struct aiScene* scene = aiImportFile(file_content,
 											   aiProcess_CalcTangentSpace
 											   | aiProcess_Triangulate
@@ -14,6 +15,8 @@ extern bool importAssetFile(const char* file_content, Mesh* out) {
 	}
 
 	printf("Number of meshes: %i\n", scene->mNumMeshes);
+
+	Mesh* meshes = (Mesh*)malloc(sizeof(Mesh) * scene->mNumMeshes);
 
 	for (int i = 0; i < scene->mNumMeshes; i++){
 		// Now we can access the file's contents
@@ -38,11 +41,11 @@ extern bool importAssetFile(const char* file_content, Mesh* out) {
 			}
 		}
 
-		Mesh ret = {
-			.vertices = vertices,
-			.elements = elements
-		};
+		meshes[i].vertices = vertices;
+		meshes[i].elements = elements;
 	}
+
+	//*out = meshes;
 
 	// We're done. Release all resources associated with this import
 	aiReleaseImport( scene);

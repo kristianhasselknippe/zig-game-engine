@@ -8,8 +8,8 @@ use @import("math.zig");
 use @import("mesh.zig");
 
 pub fn importSomething() ArrayList(Mesh) {
-    var mesh: c.Mesh = undefined;
-    const res = c.importAssetFile(c"./src/assets/models/lambo/Lamborghini_Aventador.fbx", &mesh);
+    var mesh: [*c][*c]c.Mesh = undefined;
+    const res = c.importAssetFile(c"./src/assets/models/lambo/Lamborghini_Aventador.fbx");
     return ArrayList(Mesh).init(allocator);
 }
 

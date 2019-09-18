@@ -31,4 +31,4 @@ typedef struct {
 	Mesh* meshes;
 } Model;
 
-extern bool importAssetFile(const char* file_content, Mesh* out);
+extern bool importAssetFile(const char* file_content);

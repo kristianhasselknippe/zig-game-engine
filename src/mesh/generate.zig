@@ -18,18 +18,13 @@ const MeshBuilder = struct {
         };
     }
 
-    //  pub fn rotated(self: *Mesh, angle: f32, axis: *Vec3) Mesh {
-    //     Mesh {
-    //         vertices: self
-    //             .vertices
-    //             .iter()
-    //             .map(|v| rotate_vec3(v, angle, axis))
-    //             .collect(),
-    //         normals: self.normals.iter().cloned().collect(),
-    //         colors: self.colors.iter().cloned().collect(),
-    //         indices: self.indices.iter().cloned().collect(),
-    //     }
-    // }
+     pub fn rotated(self: *Mesh, angle: f32, axis: *Vec3) Mesh {
+         var rotMatrix =
+        return Mesh {
+            .vertices = self.vertices
+            //indices: self.indices.iter().cloned().collect(),
+         };
+    }
 
     //  pub fn rotated_around_x(self: *Mesh, angle: f32) Mesh {
     //     self.rotated(angle, &vec3(1.0, 0.0, 0.0))

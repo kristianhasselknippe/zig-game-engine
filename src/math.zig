@@ -167,12 +167,28 @@ pub const Vec3 = struct {
         return v.scale(1.0 / math.sqrt(v.dot(v)));
     }
 
-    pub fn scale(v: Vec3, scalar: f32) Vec3 {
-        return Vec3{ .data = [_]f32{
-            v.data[0] * scalar,
-            v.data[1] * scalar,
-            v.data[2] * scalar,
-        } };
+    pub fn scale(v: Vec3, factor: var) Vec3 {
+        switch (@TypeOf(factor)) {
+            Vec3 => {
+                return Vec3{ .data = [_]f32{
+                    v.data[0] * scalar,
+                    v.data[1] * scalar,
+                    v.data[2] * scalar,
+                }};
+            },
+            else => {
+                switch (@typeInfo(@TypeOf(factor))) {
+                    .Float, .Int => {
+                        return Vec3{ .data = [_]f32{
+                            v.data[0] * factor,
+                            v.data[1] * factor,
+                            v.data[2] * factor,
+                        }};
+                    },
+                    else => @compileError("Scale is only supported with numbers and another Vec3")
+                }
+            }
+        }
     }
 
     pub fn dot(v: Vec3, other: Vec3) f32 {

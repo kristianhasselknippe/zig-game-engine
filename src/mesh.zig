@@ -31,37 +31,37 @@ const VertexLayout = struct {
 
 pub const Element = c.GLuint;
 
-pub const Mesh = struct {
-    const Self = @This();
+// pub const Mesh = struct {
+//     const Self = @This();
 
-    vertices: []Vertex,
-    indices: []c.GLuint,
+//     vertices: []Vertex,
+//     indices: []c.GLuint,
 
-    vao: ?ArrayBuffer = null,
-    ebo: ?ElementArrayBuffer = null,
+//     vao: ?ArrayBuffer = null,
+//     ebo: ?ElementArrayBuffer = null,
 
-    pub fn bind(self: *Self) void {
-        var this = self;
-        this.vao.?.bind();
-        this.ebo.?.bind();
-    }
+//     pub fn bind(self: *Self) void {
+//         var this = self;
+//         this.vao.?.bind();
+//         this.ebo.?.bind();
+//     }
 
-    pub fn uploadData(self: *Self) void {
-        var this = self;
-        this.vao = ArrayBuffer.create();
-        this.vao.?.bind();
-        this.vao.?.setData(Vertex, this.vertices);
+//     pub fn uploadData(self: *Self) void {
+//         var this = self;
+//         this.vao = ArrayBuffer.create();
+//         this.vao.?.bind();
+//         this.vao.?.setData(Vertex, this.vertices);
 
-        this.ebo = ElementArrayBuffer.create();
-        this.ebo.?.bind();
-        this.ebo.?.setData(Element, this.indices);
-    }
+//         this.ebo = ElementArrayBuffer.create();
+//         this.ebo.?.bind();
+//         this.ebo.?.setData(Element, this.indices);
+//     }
 
-    pub fn draw(self: *Self, comptime vertexLayout: type) void {
-        var this = self;
-        const numTriangles = @intCast(i32, self.indices.len);
-        this.bind();
-        setVertexAttribLayout(VertexLayout);
-        drawElements(numTriangles);
-    }
-};
+//     pub fn draw(self: *Self, comptime vertexLayout: type) void {
+//         var this = self;
+//         const numTriangles = @intCast(i32, self.indices.len);
+//         this.bind();
+//         setVertexAttribLayout(VertexLayout);
+//         drawElements(numTriangles);
+//     }
+// };

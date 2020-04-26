@@ -7,12 +7,13 @@ const c = @import("c.zig");
 const fabs = std.math.fabs;
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
-const drawing = @import("drawing/drawing.zig");
+const GL = @import("drawing/gl.zig");
 const Shader = @import("drawing/shader.zig");
 const panic = std.debug.panic;
 const debug = std.debug.warn;
 const sleep = std.time.sleep;
-
+const Drawing = @import("drawing/drawing.zig");
+usingnamespace @import("mesh/generate.zig");
 
 var window: *c.GLFWwindow = undefined;
 const window_width = 900;
@@ -36,6 +37,11 @@ fn initGlOptions() void {
 
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
+
+    const dc =  Drawing.DrawContext {};
+
+    dc.draw();
+
 
     if (c.glfwInit() == c.GL_FALSE) {
         @panic("GLFW init failure\n");
@@ -64,7 +70,7 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    var vao = drawing.VertexArray.create();
+    var vao = GL.VertexArray.create();
     vao.bind();
     var shouldQuit = false;
 

@@ -4,12 +4,12 @@ const assert = std.debug.assert;
 const print = std.debug.warn;
 const allocator = @import("std").heap.c_allocator;
 const ArrayList = @import("std").ArrayList;
-use @import("math.zig");
-use @import("mesh.zig");
+usingnamespace @import("math.zig");
+usingnamespace @import("mesh.zig");
 
 pub fn importSomething() ArrayList(Mesh) {
     var mesh: c.Mesh = undefined;
-    const res = c.importAssetFile(c"./src/assets/models/lambo/Lamborghini_Aventador.fbx", &mesh);
+    const res = c.importAssetFile("./src/assets/models/lambo/Lamborghini_Aventador.fbx", &mesh);
     return ArrayList(Mesh).init(allocator);
 }
 

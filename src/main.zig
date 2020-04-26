@@ -1,3 +1,6 @@
+usingnamespace @import("image.zig");
+usingnamespace @import("math.zig");
+
 const std = @import("std");
 const print = std.debug.warn;
 const c = @import("c.zig");
@@ -5,21 +8,18 @@ const fabs = std.math.fabs;
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
 const drawing = @import("drawing/drawing.zig");
-use @import("drawing/shader.zig");
-use @import("math.zig");
-use @import("mesh.zig");
-use @import("image.zig");
-
-const debug = std.debug.warn;
+const Shader = @import("drawing/shader.zig");
 const panic = std.debug.panic;
+const debug = std.debug.warn;
 const sleep = std.time.sleep;
+
 
 var window: *c.GLFWwindow = undefined;
 const window_width = 900;
 const window_height = 600;
 
-extern fn errorCallback(err: c_int, description: [*c]const u8) void {
-    panic("Error: {}\n", description);
+fn errorCallback(err: c_int, description: [*c]const u8) callconv(.C) void {
+    panic("Error: {}\n", .{description});
 }
 
 fn initGlOptions() void {
@@ -38,14 +38,14 @@ pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
 
     if (c.glfwInit() == c.GL_FALSE) {
-        panic("GLFW init failure\n");
+        @panic("GLFW init failure\n");
     }
     defer c.glfwTerminate();
 
     initGlOptions();
 
-    window = c.glfwCreateWindow(window_width, window_height, c"Game", null, null) orelse {
-        panic("unable to create window\n");
+    window = c.glfwCreateWindow(window_width, window_height, "Game", null, null) orelse {
+        @panic("unable to create window\n");
     };
 
     c.glfwMakeContextCurrent(window);
@@ -68,7 +68,7 @@ pub fn main() anyerror!void {
     vao.bind();
     var shouldQuit = false;
 
-    const defaultShader = createDefaultShader() catch @panic("Unable to create default shader");
+    const defaultShader = Shader.createDefaultShader() catch @panic("Unable to create default shader");
     const projection = Mat4.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
@@ -76,16 +76,11 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
     var zoom: f32 = 0.0;
 
-    const meshes = assets.importSomething().toSlice();
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 
-    for (meshes) |*mesh| {
-        mesh.uploadData();
-    }
-
     const theImage = PngImage.create(@embedFile("./assets/testimg.png"));
-    print("We have loaded an image \n");
+    print("We have loaded an image \n", .{});
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
@@ -94,7 +89,7 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const view = Mat4.translation(0,0,-600 -100.0 * fabs(@cos(f32, zoom)));
+        const view = Mat4.translation(0,0,-600 -100.0 * fabs(@cos(zoom)));
         zoom += 0.01;
 
         const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
@@ -103,20 +98,17 @@ pub fn main() anyerror!void {
 
 
         defaultShader.setUniform(
-            c"projection", projection
+            "projection", projection
         );
         defaultShader.setUniform(
-            c"view", view
+            "view", view
         );
         defaultShader.setUniform(
-            c"model", model
+            "model", model
         );
         roll += 0.02;
         yaw += 0.01;
 
-        for (meshes) |*mesh| {
-            mesh.draw(Vertex);
-        }
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

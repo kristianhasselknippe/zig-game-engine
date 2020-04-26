@@ -11,7 +11,7 @@ pub fn assertNoError() void {
     if (builtin.mode != builtin.Mode.ReleaseFast) {
         const err = c.glGetError();
         if (err != c.GL_NO_ERROR) {
-            panic("GL error: {}\n", err);
+            panic("GL error: {}\n", .{err});
         }
     }
 }
@@ -25,8 +25,8 @@ pub fn printProgramInfoLog(obj: c.GLuint) !void {
     if (infologLength > 0) {
         var infoLog = try c_allocator.alloc(u8, @intCast(usize, infologLength));
         c.glGetProgramInfoLog(obj, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
-        std.debug.warn("Linker error\n");
-        std.debug.warn("{}\n", infoLog);
+        std.debug.warn("Linker error\n", .{});
+        std.debug.warn("{}\n", .{infoLog});
         c_allocator.free(infoLog);
     }
 }

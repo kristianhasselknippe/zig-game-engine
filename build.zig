@@ -11,14 +11,14 @@ pub fn build(b: *Builder) void {
     exe.linkSystemLibrary("epoxy");
     exe.linkSystemLibrary("assimp");
     exe.linkSystemLibrary("cglm");
-    if (builtin.os == builtin.Os.linux) {
+    if (builtin.os.tag == .linux) {
         exe.linkSystemLibrary("unwind");
     }
 
-    exe.addCSourceFile("asset_loader/asset_loader_impl.c", [_][]const u8{"-std=c99"});
+    exe.addCSourceFile("asset_loader/asset_loader_impl.c", &[_][]const u8{"-std=c99"});
     exe.addIncludeDir("asset_loader");
 
-    exe.addCSourceFile("stb_image/stb_image_impl.c", [_][]const u8{"-std=c99"});
+    exe.addCSourceFile("stb_image/stb_image_impl.c", &[_][]const u8{"-std=c99"});
     exe.addIncludeDir("stb_image");
 
     exe.install();

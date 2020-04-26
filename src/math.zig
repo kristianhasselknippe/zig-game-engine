@@ -1,4 +1,4 @@
-use @import("./typeUtils.zig");
+usingnamespace @import("./typeUtils.zig");
 const assert = @import("std").debug.assert;
 const math = @import("std").math;
 

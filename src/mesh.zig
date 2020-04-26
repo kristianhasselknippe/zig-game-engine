@@ -1,7 +1,7 @@
 const c = @import("c.zig");
 const print = @import("std").debug.warn;
-use @import("math.zig");
-use @import("drawing/drawing.zig");
+usingnamespace @import("math.zig");
+usingnamespace @import("drawing/drawing.zig");
 
 pub const TexCoord = Vec2(f32);
 

@@ -5,7 +5,7 @@ const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const builtin = @import("builtin");
 const assert = std.debug.assert;
-use @import("../typeUtils.zig");
+usingnamespace @import("../typeUtils.zig");
 
 pub const VertexArray = struct {
     handle: c.GLuint,
@@ -21,7 +21,7 @@ pub const VertexArray = struct {
 
     pub fn bind(self: @This()) void {
         c.glBindVertexArray(self.handle);
-        print("Bound vao: <{}> \n", self.handle);
+        print("Bound vao: <{}> \n", .{self.handle});
         debug_gl.assertNoError();
     }
 };

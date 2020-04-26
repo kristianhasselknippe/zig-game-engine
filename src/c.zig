@@ -1,4 +1,4 @@
-pub use @cImport({
+pub usingnamespace @cImport({
     @cInclude("stdio.h");
     @cInclude("epoxy/gl.h");
     @cInclude("GLFW/glfw3.h");

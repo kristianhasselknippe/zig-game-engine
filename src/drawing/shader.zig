@@ -2,7 +2,7 @@ const c = @import("../c.zig");
 const debug_gl = @import("../debug_gl.zig");
 const std = @import("std");
 const allocator = std.heap.c_allocator;
-use @import("../math.zig");
+usingnamespace @import("../math.zig");
 
 const Shader = struct {
     handle: c.GLuint,
@@ -22,8 +22,8 @@ const Shader = struct {
         if (infologLength > 0) {
             var infoLog = try allocator.alloc(u8, @intCast(usize, infologLength));
             c.glGetShaderInfoLog(shader.handle, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
-            std.debug.warn("Shader error\n");
-            std.debug.warn("{}\n", infoLog);
+            std.debug.warn("Shader error\n", .{});
+            std.debug.warn("{}\n", .{infoLog});
             allocator.free(infoLog);
         }
     }
@@ -127,13 +127,13 @@ const ShaderProgram = struct {
     }
 
     pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) void {
-        switch (@typeOf(val)) {
-            Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, val.data[0][0..].ptr),
+        switch (@TypeOf(val)) {
+            Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, val.data[0][0..]),
             f32 => setUniformInternal(program, name, UniformTypeId.Scalar, UniformPrimitive.Float, val),
-            else => @compileError("Unsupported uniform type " ++ @typeName(@typeOf(val)))
+            else => @compileError("Unsupported uniform type " ++ @typeName(@TypeOf(val)))
         }
-        
     }
+
 
 };
 
@@ -153,14 +153,14 @@ pub const UniformPrimitive = enum {
 };
 
 pub fn createDefaultShader() !ShaderProgram {
-    const vertexSourceString = @embedFile("../assets/shaders/default.vs");
-    const vertexShaderSource = try std.cstr.addNullByte(allocator, &vertexSourceString);
-    const vertexShader = createVertexShader(vertexShaderSource.ptr);
+    const vertexShaderSource = @embedFile("../assets/shaders/default.vs");
+    //const vertexShaderSource = try std.cstr.addNullByte(allocator, &vertexSourceString);
+    const vertexShader = createVertexShader(vertexShaderSource);
     try vertexShader.printShaderInfoLog();
 
-    const fragmentShaderString = @embedFile("../assets/shaders/default.fs");
-    const fragmentShaderSource = try std.cstr.addNullByte(allocator, &fragmentShaderString);
-    const fragmentShader = createFragmentShader(fragmentShaderSource.ptr);
+    const fragmentShaderSource = @embedFile("../assets/shaders/default.fs");
+    //const fragmentShaderSource = try std.cstr.addNullByte(allocator, &fragmentShaderString);
+    const fragmentShader = createFragmentShader(fragmentShaderSource);
     try fragmentShader.printShaderInfoLog();
     return ShaderProgram.init(vertexShader, fragmentShader);
 }

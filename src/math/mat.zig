@@ -5,10 +5,10 @@ const math = @import("std").math;
 
 pub const mat4_identity = Mat4{
     .data = .{
-        1.0, 0.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        0.0, 0.0, 1.0, 0.0,
-        0.0, 0.0, 0.0, 1.0,
+        [_]f32 {1.0, 0.0, 0.0, 0.0},
+        [_]f32 {0.0, 1.0, 0.0, 0.0},
+        [_]f32 {0.0, 0.0, 1.0, 0.0},
+        [_]f32 {0.0, 0.0, 0.0, 1.0},
     },
 };
 
@@ -24,7 +24,7 @@ pub fn mat4Ortho(left: f32, right: f32, bottom: f32, top: f32) Mat4 {
 }
 
 pub const Mat4 = struct {
-    data: [16]f32,
+    data: [4][4]f32,
 
     /// matrix multiplication
     pub fn mult(m: Mat4, other: Mat4) Mat4 {
@@ -121,11 +121,11 @@ pub const Mat4 = struct {
 
     pub fn translation(x: f32, y: f32, z: f32) Mat4 {
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{ 1.0, 0.0, 0.0, 0.0 },
-                [_]f32{ 0.0, 1.0, 0.0, 0.0 },
-                [_]f32{ 0.0, 0.0, 1.0, 0.0 },
-                [_]f32{ x, y, z, 1.0 },
+            .data = [4][4]f32{
+                [4]f32{ 1.0, 0.0, 0.0, 0.0 },
+                [4]f32{ 0.0, 1.0, 0.0, 0.0 },
+                [4]f32{ 0.0, 0.0, 1.0, 0.0 },
+                [4]f32{ x, y, z, 1.0 },
             },
         };
     }
@@ -135,7 +135,7 @@ pub const Mat4 = struct {
         const xScale = yScale / aspect;
         const nearmfar = near - far;
         const m = Mat4{
-            .data = [_][4]f32{
+            .data = [4][4]f32{
                 [_]f32{ xScale, 0, 0, 0 },
                 [_]f32{ 0, yScale, 0, 0 },
                 [_]f32{ 0, 0, (far + near) / nearmfar, -1 },

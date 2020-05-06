@@ -98,7 +98,7 @@ pub fn main() anyerror!void {
         const view = Mat4.translation(0,0,-600 -100.0 * fabs(@cos(zoom)));
         zoom += 0.01;
 
-        const model = Mat4.rotate(mat4_identity, yaw, vec3(1,0,0));
+        const model = Mat4.rotate(yaw, vec3(1,0,0));
 
         //const mvp = projection.mult(view);
 

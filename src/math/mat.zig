@@ -3,15 +3,6 @@ usingnamespace @import(("./vec.zig"));
 const assert = @import((("std"))).debug.assert;
 const math = @import("std").math;
 
-pub const mat4_identity = Mat4{
-    .data = .{
-        [_]f32 {1.0, 0.0, 0.0, 0.0},
-        [_]f32 {0.0, 1.0, 0.0, 0.0},
-        [_]f32 {0.0, 0.0, 1.0, 0.0},
-        [_]f32 {0.0, 0.0, 0.0, 1.0},
-    },
-};
-
 /// Creates a matrix for an orthographic parallel viewing volume.
 pub fn mat4Ortho(left: f32, right: f32, bottom: f32, top: f32) Mat4 {
     var m = mat4_identity;
@@ -25,6 +16,17 @@ pub fn mat4Ortho(left: f32, right: f32, bottom: f32, top: f32) Mat4 {
 
 pub const Mat4 = struct {
     data: [4][4]f32,
+
+    pub fn identity() Mat4 {
+        return Mat4{
+            .data = .{
+                [_]f32{ 1.0, 0.0, 0.0, 0.0 },
+                [_]f32{ 0.0, 1.0, 0.0, 0.0 },
+                [_]f32{ 0.0, 0.0, 1.0, 0.0 },
+                [_]f32{ 0.0, 0.0, 0.0, 1.0 },
+            },
+        };
+    }
 
     /// matrix multiplication
     pub fn mult(m: Mat4, other: Mat4) Mat4 {
@@ -61,7 +63,8 @@ pub const Mat4 = struct {
     /// Input matrix multiplied by this rotation matrix.
     /// angle: Rotation angle expressed in radians.
     /// axis: Rotation axis, recommended to be normalized.
-    pub fn rotate(m: Mat4, angle: f32, axis_unnormalized: Vec3) Mat4 {
+    pub fn rotate(angle: f32, axis_unnormalized: Vec3) Mat4 {
+        const m = Mat4.identity();
         const cos = math.cos(angle);
         const s = math.sin(angle);
         const axis = axis_unnormalized.normalize();

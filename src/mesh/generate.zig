@@ -19,7 +19,12 @@ const MeshBuilder = struct {
     }
 
      pub fn rotated(self: *Mesh, angle: f32, axis: *Vec3) Mesh {
-         var rotMatrix =
+         var newVerts = self.allocator.alloc(Vertex, self.prevMesh.vertices.len);
+         var rotMatrix = Mat4.rotate(angle, *axis);
+         for (self.vertices) |vert,i| {
+             newVerts[i] = vert.applyMatrix(rotMatrix);
+         }
+
         return Mesh {
             .vertices = self.vertices
             //indices: self.indices.iter().cloned().collect(),

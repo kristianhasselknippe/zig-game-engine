@@ -110,7 +110,7 @@ pub fn main() anyerror!void {
         3,
         c.GL_FLOAT,
         c.GL_FALSE,
-        3,
+        0,
         null);
 
     assertNoError();

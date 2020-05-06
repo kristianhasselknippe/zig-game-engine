@@ -68,41 +68,33 @@ pub const Mat4 = struct {
         const temp = axis.scale(1.0 - cos);
 
         const rot = Mat4{
-            .data = [_][4]f32{
-                [_]f32{ cos + temp.data[0] * axis.data[0], 0.0 + temp.data[1] * axis.data[0] - s * axis.data[2], 0.0 + temp.data[2] * axis.data[0] + s * axis.data[1], 0.0 },
-                [_]f32{ 0.0 + temp.data[0] * axis.data[1] + s * axis.data[2], cos + temp.data[1] * axis.data[1], 0.0 + temp.data[2] * axis.data[1] - s * axis.data[0], 0.0 },
-                [_]f32{ 0.0 + temp.data[0] * axis.data[2] - s * axis.data[1], 0.0 + temp.data[1] * axis.data[2] + s * axis.data[0], cos + temp.data[2] * axis.data[2], 0.0 },
-                [_]f32{ 0.0, 0.0, 0.0, 0.0 },
+            .data = [16]f32{
+                cos + temp.data[0] * axis.data[0], 0.0 + temp.data[1] * axis.data[0] - s * axis.data[2], 0.0 + temp.data[2] * axis.data[0] + s * axis.data[1], 0.0,
+                0.0 + temp.data[0] * axis.data[1] + s * axis.data[2], cos + temp.data[1] * axis.data[1], 0.0 + temp.data[2] * axis.data[1] - s * axis.data[0], 0.0,
+                0.0 + temp.data[0] * axis.data[2] - s * axis.data[1], 0.0 + temp.data[1] * axis.data[2] + s * axis.data[0], cos + temp.data[2] * axis.data[2], 0.0,
+                0.0, 0.0, 0.0, 0.0,
             },
         };
 
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{
+            .data = [16]f32{
                     m.data[0][0] * rot.data[0][0] + m.data[0][1] * rot.data[1][0] + m.data[0][2] * rot.data[2][0],
                     m.data[0][0] * rot.data[0][1] + m.data[0][1] * rot.data[1][1] + m.data[0][2] * rot.data[2][1],
                     m.data[0][0] * rot.data[0][2] + m.data[0][1] * rot.data[1][2] + m.data[0][2] * rot.data[2][2],
                     m.data[0][3],
-                },
-                [_]f32{
                     m.data[1][0] * rot.data[0][0] + m.data[1][1] * rot.data[1][0] + m.data[1][2] * rot.data[2][0],
                     m.data[1][0] * rot.data[0][1] + m.data[1][1] * rot.data[1][1] + m.data[1][2] * rot.data[2][1],
                     m.data[1][0] * rot.data[0][2] + m.data[1][1] * rot.data[1][2] + m.data[1][2] * rot.data[2][2],
                     m.data[1][3],
-                },
-                [_]f32{
                     m.data[2][0] * rot.data[0][0] + m.data[2][1] * rot.data[1][0] + m.data[2][2] * rot.data[2][0],
                     m.data[2][0] * rot.data[0][1] + m.data[2][1] * rot.data[1][1] + m.data[2][2] * rot.data[2][1],
                     m.data[2][0] * rot.data[0][2] + m.data[2][1] * rot.data[1][2] + m.data[2][2] * rot.data[2][2],
                     m.data[2][3],
-                },
-                [_]f32{
                     m.data[3][0] * rot.data[0][0] + m.data[3][1] * rot.data[1][0] + m.data[3][2] * rot.data[2][0],
                     m.data[3][0] * rot.data[0][1] + m.data[3][1] * rot.data[1][1] + m.data[3][2] * rot.data[2][1],
                     m.data[3][0] * rot.data[0][2] + m.data[3][1] * rot.data[1][2] + m.data[3][2] * rot.data[2][2],
                     m.data[3][3],
                 },
-            },
         };
     }
 
@@ -110,22 +102,22 @@ pub const Mat4 = struct {
     /// Input matrix multiplied by this translation matrix.
     pub fn translate(m: Mat4, x: f32, y: f32, z: f32) Mat4 {
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{ m.data[0][0], m.data[0][1], m.data[0][2], m.data[0][3] + m.data[0][0] * x + m.data[0][1] * y + m.data[0][2] * z },
-                [_]f32{ m.data[1][0], m.data[1][1], m.data[1][2], m.data[1][3] + m.data[1][0] * x + m.data[1][1] * y + m.data[1][2] * z },
-                [_]f32{ m.data[2][0], m.data[2][1], m.data[2][2], m.data[2][3] + m.data[2][0] * x + m.data[2][1] * y + m.data[2][2] * z },
-                [_]f32{ m.data[3][0], m.data[3][1], m.data[3][2], m.data[3][3] },
+            .data = [16]f32{
+                m.data[0][0], m.data[0][1], m.data[0][2], m.data[0][3] + m.data[0][0] * x + m.data[0][1] * y + m.data[0][2] * z,
+                m.data[1][0], m.data[1][1], m.data[1][2], m.data[1][3] + m.data[1][0] * x + m.data[1][1] * y + m.data[1][2] * z,
+                m.data[2][0], m.data[2][1], m.data[2][2], m.data[2][3] + m.data[2][0] * x + m.data[2][1] * y + m.data[2][2] * z,
+                m.data[3][0], m.data[3][1], m.data[3][2], m.data[3][3]
             },
         };
     }
 
     pub fn translation(x: f32, y: f32, z: f32) Mat4 {
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{ 1.0, 0.0, 0.0, 0.0 },
-                [_]f32{ 0.0, 1.0, 0.0, 0.0 },
-                [_]f32{ 0.0, 0.0, 1.0, 0.0 },
-                [_]f32{ x, y, z, 1.0 },
+            .data = [16]f32{
+                1.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0,
+                x, y, z, 1.0
             },
         };
     }
@@ -135,11 +127,11 @@ pub const Mat4 = struct {
         const xScale = yScale / aspect;
         const nearmfar = near - far;
         const m = Mat4{
-            .data = [_][4]f32{
-                [_]f32{ xScale, 0, 0, 0 },
-                [_]f32{ 0, yScale, 0, 0 },
-                [_]f32{ 0, 0, (far + near) / nearmfar, -1 },
-                [_]f32{ 0, 0, 2 * far * near / nearmfar, 0 },
+            .data = [16]f32{
+                xScale, 0, 0, 0,
+                0, yScale, 0, 0,
+                0, 0, (far + near) / nearmfar, -1,
+                0, 0, 2 * far * near / nearmfar, 0
             },
         };
         return m;
@@ -153,22 +145,22 @@ pub const Mat4 = struct {
     /// Input matrix multiplied by this scale matrix.
     pub fn scale(m: Mat4, x: f32, y: f32, z: f32) Mat4 {
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{ m.data[0][0] * x, m.data[0][1] * y, m.data[0][2] * z, m.data[0][3] },
-                [_]f32{ m.data[1][0] * x, m.data[1][1] * y, m.data[1][2] * z, m.data[1][3] },
-                [_]f32{ m.data[2][0] * x, m.data[2][1] * y, m.data[2][2] * z, m.data[2][3] },
-                [_]f32{ m.data[3][0] * x, m.data[3][1] * y, m.data[3][2] * z, m.data[3][3] },
+            .data = [16]f32{
+                m.data[0][0] * x, m.data[0][1] * y, m.data[0][2] * z, m.data[0][3],
+                m.data[1][0] * x, m.data[1][1] * y, m.data[1][2] * z, m.data[1][3],
+                m.data[2][0] * x, m.data[2][1] * y, m.data[2][2] * z, m.data[2][3],
+                m.data[3][0] * x, m.data[3][1] * y, m.data[3][2] * z, m.data[3][3]
             },
         };
     }
 
     pub fn transpose(m: Mat4) Mat4 {
         return Mat4{
-            .data = [_][4]f32{
-                [_]f32{ m.data[0][0], m.data[1][0], m.data[2][0], m.data[3][0] },
-                [_]f32{ m.data[0][1], m.data[1][1], m.data[2][1], m.data[3][1] },
-                [_]f32{ m.data[0][2], m.data[1][2], m.data[2][2], m.data[3][2] },
-                [_]f32{ m.data[0][3], m.data[1][3], m.data[2][3], m.data[3][3] },
+            .data = [16]f32{
+                m.data[0][0], m.data[1][0], m.data[2][0], m.data[3][0],
+                m.data[0][1], m.data[1][1], m.data[2][1], m.data[3][1],
+                m.data[0][2], m.data[1][2], m.data[2][2], m.data[3][2],
+                m.data[0][3], m.data[1][3], m.data[2][3], m.data[3][3]
             },
         };
     }

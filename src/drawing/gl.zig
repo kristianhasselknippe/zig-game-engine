@@ -19,6 +19,11 @@ pub const VertexArray = struct {
         };
     }
 
+    pub fn enable(self: @This()) void {
+        c.glEnableVertexAttribArray(0);
+        debug_gl.assertNoError();
+    }
+
     pub fn bind(self: @This()) void {
         c.glBindVertexArray(self.handle);
         print("Bound vao: <{}> \n", .{self.handle});

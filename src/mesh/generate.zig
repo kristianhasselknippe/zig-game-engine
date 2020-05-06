@@ -1,8 +1,8 @@
 usingnamespace @import("../math.zig");
 const Allocator = @import("std").mem.Allocator;
 
-const Vertex = Vec3;
-const Index = usize;
+pub const Vertex = Vec3;
+pub const Index = u32;
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,

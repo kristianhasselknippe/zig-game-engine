@@ -1,5 +1,9 @@
 usingnamespace @import("image.zig");
 usingnamespace @import("math.zig");
+usingnamespace @import("math/vec.zig");
+usingnamespace @import("mesh/generate.zig");
+usingnamespace @import("drawing/gl.zig");
+usingnamespace @import("debug_gl.zig");
 
 const std = @import("std");
 const print = std.debug.warn;
@@ -7,14 +11,12 @@ const c = @import("c.zig");
 const fabs = std.math.fabs;
 const debug_gl = @import("debug_gl.zig");
 const assets = @import("assets.zig");
-const GL = @import("drawing/gl.zig");
 const Shader = @import("drawing/shader.zig");
 const panic = std.debug.panic;
 const debug = std.debug.warn;
 const sleep = std.time.sleep;
 const Drawing = @import("drawing/drawing.zig");
 const c_allocator = @import("std").heap.c_allocator;
-usingnamespace @import("mesh/generate.zig");
 
 var window: *c.GLFWwindow = undefined;
 const window_width = 900;
@@ -71,8 +73,6 @@ pub fn main() anyerror!void {
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
 
-    var vao = GL.VertexArray.create();
-    vao.bind();
     var shouldQuit = false;
 
     const defaultShader = Shader.createDefaultShader() catch @panic("Unable to create default shader");
@@ -90,7 +90,32 @@ pub fn main() anyerror!void {
         print("   vert: {},{},{}\n", .{vert.x(), vert.y(), vert.z()});
     }
 
-    c.glClearColor(1.0, 0.0, 1.0, 1.0);
+    const vao = VertexArray.create();
+    vao.bind();
+    vao.enable();
+
+
+    assertNoError();
+
+    var vertex_buffer = ArrayBuffer.create();
+    vertex_buffer.bind();
+    vertex_buffer.setData(Vertex, mesh.vertices);
+    var ebo = ElementArrayBuffer.create();
+    ebo.bind();
+    var indices = [_]Index{0,1,2};
+    ebo.setData(Index, &indices);
+
+    c.glVertexAttribPointer(
+        0,
+        3,
+        c.GL_FLOAT,
+        c.GL_FALSE,
+        3,
+        null);
+
+    assertNoError();
+
+    c.glClearColor(1.0, 1.0, 0.5, 1.0);
 
     const theImage = PngImage.create(@embedFile("./assets/testimg.png"));
     print("We have loaded an image \n", .{});
@@ -102,26 +127,8 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        const view = Mat4.translation(0,0,-600 -100.0 * fabs(@cos(zoom)));
-        zoom += 0.01;
 
-        const model = Mat4.rotate(yaw, vec3(1,0,0));
-
-        //const mvp = projection.mult(view);
-
-
-        defaultShader.setUniform(
-            "projection", projection
-        );
-        defaultShader.setUniform(
-            "view", view
-        );
-        defaultShader.setUniform(
-            "model", model
-        );
-        roll += 0.02;
-        yaw += 0.01;
-
+        drawElements(3);
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

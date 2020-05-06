@@ -1,34 +1,62 @@
 usingnamespace @import("../math.zig");
+const Allocator = @import("std").mem.Allocator;
 
 const Vertex = Vec3;
 const Index = usize;
 
-const MeshBuilder = struct {
+pub const MeshBuilder = struct {
     allocator: *Allocator,
-    prevMesh: Mesh,
+    vertices: ?[]Vertex,
 
-    pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) Mesh {
+    pub fn new(allocator: *Allocator) MeshBuilder {
+        return MeshBuilder {
+            .allocator = allocator,
+            .vertices = null,
+        };
+    }
+
+    pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
         var newVerts = self.allocator.alloc(Vertex, self.prevMesh.vertices.len);
         for (self.vertices) |vert,i| {
             newVerts[i] = vert.scale(vec3(x,y,z));
         }
-        return Mesh {
-            .vertices = newVerts,
-            //indices: self.indices.iter().cloned().collect(),
-        };
+        if (self.vertices != null) {
+            self.allocator.free(self.vertices);
+        }
+        self.vertices = newVerts;
+        return self;
     }
 
-     pub fn rotated(self: *Mesh, angle: f32, axis: *Vec3) Mesh {
+     pub fn rotated(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
          var newVerts = self.allocator.alloc(Vertex, self.prevMesh.vertices.len);
          var rotMatrix = Mat4.rotate(angle, *axis);
          for (self.vertices) |vert,i| {
              newVerts[i] = vert.applyMatrix(rotMatrix);
          }
 
-        return Mesh {
+        self.prevMesh = Mesh {
             .vertices = self.vertices
             //indices: self.indices.iter().cloned().collect(),
          };
+         return self;
+    }
+
+    pub fn create_triangle(self: *MeshBuilder) *MeshBuilder {
+        var vertices = self.allocator.alloc(Vertex, 3) catch unreachable;
+        vertices[0] = vec3(0.0, 0.0, 0.0);
+        vertices[1] = vec3(1.0, 0.0, 0.0);
+        vertices[2] = vec3(1.0, 1.0, 0.0);
+        if (self.vertices != null) {
+            self.allocator.free(self.vertices.?);
+        }
+        self.vertices = vertices;
+        return self;
+    }
+
+    pub fn build(self: *MeshBuilder) Mesh {
+        return Mesh {
+            .vertices = self.vertices.?
+        };
     }
 
     //  pub fn rotated_around_x(self: *Mesh, angle: f32) Mesh {
@@ -87,28 +115,7 @@ const MeshBuilder = struct {
     //    }
     // }
 
-    //  pub fn create_triangle(color: *Option<Vec3>) Mesh {
-    //     return Mesh {
-    //         vertices: vec![
-    //             vec3(0.0, 0.0, 0.0),
-    //             vec3(1.0, 0.0, 0.0),
-    //             vec3(1.0, 1.0, 0.0),
-    //         ],
-    //         normals: vec![
-    //             vec3(0.0, 0.0, 1.0),
-    //             vec3(0.0, 0.0, 1.0),
-    //             vec3(0.0, 0.0, 1.0),
-    //         ],
-    //         colors: {
-    //             if let &Some(color) = color {
-    //                 std::vec::from_elem(color, 3)
-    //             } else {
-    //                 std::vec::from_elem(vec3(1.0, 0.0, 1.0), 3)
-    //             }
-    //         },
-    //         indices: vec![0, 1, 2],
-    //     };
-    // }
+
 
     //  fn create_square(color: *Option<Vec3>) Mesh {
     //     let t1 = Self::create_triangle(color);
@@ -142,6 +149,6 @@ const MeshBuilder = struct {
 };
 
 const Mesh = struct {
-     vertices: [*]Vertex,
-     indices: [*]Index,
+    vertices: []Vertex,
+    //indices: *[]Index,
 };

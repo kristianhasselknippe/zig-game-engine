@@ -13,6 +13,7 @@ const panic = std.debug.panic;
 const debug = std.debug.warn;
 const sleep = std.time.sleep;
 const Drawing = @import("drawing/drawing.zig");
+const c_allocator = @import("std").heap.c_allocator;
 usingnamespace @import("mesh/generate.zig");
 
 var window: *c.GLFWwindow = undefined;
@@ -82,6 +83,12 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
     var zoom: f32 = 0.0;
 
+    var mesh = MeshBuilder.new(c_allocator).create_triangle().build();
+
+    print("Mesh: {}  \n", .{ mesh });
+    for (mesh.vertices) |vert| {
+        print("   vert: {},{},{}\n", .{vert.x(), vert.y(), vert.z()});
+    }
 
     c.glClearColor(1.0, 0.0, 1.0, 1.0);
 

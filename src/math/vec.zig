@@ -9,6 +9,19 @@ pub const Vec2 = struct {
 pub const Vec3 = struct {
     data: [3]f32,
 
+    pub fn x(self: Vec3) f32 {
+        return self.data[0];
+    }
+
+    pub fn y(self: Vec3) f32 {
+        return self.data[1];
+    }
+
+    pub fn z(self: Vec3) f32 {
+        return self.data[2];
+    }
+
+
     pub fn normalize(v: Vec3) Vec3 {
         return v.scale(1.0 / math.sqrt(v.dot(v)));
     }

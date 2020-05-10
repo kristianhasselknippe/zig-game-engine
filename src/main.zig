@@ -83,7 +83,11 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
     var zoom: f32 = 0.0;
 
-    var mesh = MeshBuilder.new(c_allocator).create_triangle().build();
+    var mesh =
+        MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0)).build();
+    //     .combine(
+    //         MeshBuilder.new(c_allocator).create_triangle()
+    // ).build();
 
     print("Mesh: {}  \n", .{ mesh });
     for (mesh.vertices) |vert| {

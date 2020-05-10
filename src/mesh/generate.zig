@@ -27,17 +27,16 @@ pub const MeshBuilder = struct {
         return self;
     }
 
-     pub fn rotated(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
-         var newVerts = self.allocator.alloc(Vertex, self.prevMesh.vertices.len);
-         var rotMatrix = Mat4.rotate(angle, *axis);
-         for (self.vertices) |vert,i| {
-             newVerts[i] = vert.applyMatrix(rotMatrix);
+     pub fn rotate(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
+         var newVerts = self.allocator.alloc(Vertex, self.vertices.?.len) catch unreachable;
+         var rotMatrix = Mat4.rotate(angle, axis.*);
+         if (self.vertices) |vertices| {
+             for (vertices) |vert,i| {
+                 newVerts[i] = vert.applyMatrix(rotMatrix);
+             }
          }
 
-        self.prevMesh = Mesh {
-            .vertices = self.vertices
-            //indices: self.indices.iter().cloned().collect(),
-         };
+         self.vertices = newVerts;
          return self;
     }
 
@@ -48,6 +47,18 @@ pub const MeshBuilder = struct {
         vertices[2] = vec3(1.0, 1.0, 0.0);
         if (self.vertices != null) {
             self.allocator.free(self.vertices.?);
+        }
+        self.vertices = vertices;
+        return self;
+    }
+
+    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
+        var vertices = self.allocator.alloc(Vertex, self.vertices.?.len + other.vertices.?.len) catch unreachable;
+        if (self.vertices != null) {
+            self.allocator.free(self.vertices.?);
+        }
+        if (other.vertices != null) {
+            other.allocator.free(other.vertices.?);
         }
         self.vertices = vertices;
         return self;

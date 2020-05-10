@@ -1,4 +1,5 @@
 usingnamespace @import(("../typeUtils.zig"));
+usingnamespace @import(("./mat.zig"));
 const assert = @import((("std"))).debug.assert;
 const math = @import("std").math;
 
@@ -82,10 +83,10 @@ pub const Vec3 = struct {
     }
 
     pub fn applyMatrix(self: *Vec3, m: Mat4) Vec3 {
-        var x = self.x;
-        var y = self.y;
-        var z = self.z;
-        var e = m.flat_data();
+        const x = self.x();
+        const y = self.y();
+        const z = self.z();
+        const e = m.flat_data();
 
         var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
 
@@ -104,6 +105,7 @@ pub fn vec3(x: f32, y: f32, z: f32) Vec3 {
 }
 
 pub const Vec4 = struct {
+
     data: [4]f32,
 };
 
@@ -182,6 +184,7 @@ fn testOrtho() void {
 }
 
 fn assertFEq(left: f32, right: f32) void {
+
     const diff = c.fabsf(left - right);
     assert(diff < 0.01);
 }

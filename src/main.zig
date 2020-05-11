@@ -91,7 +91,7 @@ pub fn main() anyerror!void {
 
     print("Mesh: {}  \n", .{ mesh });
     for (mesh.vertices) |vert| {
-        print("   vert: {},{},{}\n", .{vert.x(), vert.y(), vert.z()});
+        print("   vert: {},{},{}\n", .{vert.getX(), vert.getY(), vert.getZ()});
     }
 
     const vao = VertexArray.create();

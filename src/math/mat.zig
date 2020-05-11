@@ -55,8 +55,8 @@ pub const Mat4 = struct {
         };
     }
 
-    pub fn flat_data(self: *Mat4) [16]f32 {
-        return @castPtr([16]f32, self.data);
+    pub fn flat_data(self: Mat4) [16]f32 {
+        return @bitCast([16]f32, self.data);
     }
 
     /// Builds a rotation 4 * 4 matrix created from an axis vector and an angle.

@@ -30,11 +30,9 @@ pub const MeshBuilder = struct {
      pub fn rotate(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
          var newVerts = self.allocator.alloc(Vertex, self.vertices.?.len) catch unreachable;
          var rotMatrix = Mat4.rotate(angle, axis.*);
-         if (self.vertices) |vertices| {
-             for (vertices) |vert,i| {
+             for (self.vertices.?) |vert,i| {
                  newVerts[i] = vert.applyMatrix(rotMatrix);
              }
-         }
 
          self.vertices = newVerts;
          return self;

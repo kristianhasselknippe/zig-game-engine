@@ -10,15 +10,15 @@ pub const Vec2 = struct {
 pub const Vec3 = struct {
     data: [3]f32,
 
-    pub fn x(self: Vec3) f32 {
+    pub fn getX(self: Vec3) f32 {
         return self.data[0];
     }
 
-    pub fn y(self: Vec3) f32 {
+    pub fn getY(self: Vec3) f32 {
         return self.data[1];
     }
 
-    pub fn z(self: Vec3) f32 {
+    pub fn getZ(self: Vec3) f32 {
         return self.data[2];
     }
 
@@ -82,13 +82,13 @@ pub const Vec3 = struct {
         };
     }
 
-    pub fn applyMatrix(self: *Vec3, m: Mat4) Vec3 {
-        const x = self.x();
-        const y = self.y();
-        const z = self.z();
+    pub fn applyMatrix(self: Vec3, m: Mat4) Vec3 {
+        const x = self.getX();
+        const y = self.getY();
+        const z = self.getZ();
         const e = m.flat_data();
 
-        var w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
+        const w = 1 / (e[3] * x + e[7] * y + e[11] * z + e[15]);
 
         return vec3((e[0] * x + e[4] * y + e[8] * z + e[12]) * w, (e[1] * x + e[5] * y + e[9] * z + e[13]) * w, (e[2] * x + e[6] * y + e[10] * z + e[14]) * w);
     }

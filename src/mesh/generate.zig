@@ -96,17 +96,17 @@ pub const MeshBuilder = struct {
         };
     }
 
-    //  pub fn rotated_around_x(self: *Mesh, angle: f32) Mesh {
-    //     self.rotated(angle, &vec3(1.0, 0.0, 0.0))
-    // }
+    pub fn rotated_around_x(self: *Mesh, angle: f32) Mesh {
+        self.rotated(angle, &vec3(1.0, 0.0, 0.0));
+    }
 
-    //  pub fn rotated_around_y(self: *Mesh, angle: f32) Mesh {
-    //     self.rotated(angle, &vec3(0.0, 1.0, 0.0))
-    // }
+    pub fn rotated_around_y(self: *Mesh, angle: f32) Mesh {
+        self.rotated(angle, &vec3(0.0, 1.0, 0.0));
+    }
 
-    //  pub fn rotated_around_z(self: *Mesh, angle: f32) Mesh {
-    //     self.rotated(angle, &vec3(0.0, 0.0, 1.0))
-    // }
+    pub fn rotated_around_z(self: *Mesh, angle: f32) Mesh {
+        self.rotated(angle, &vec3(0.0, 0.0, 1.0));
+    }
 
     //  pub fn translated(self: *Mesh, x: f32, y: f32, z: f32) Mesh {
     //     Mesh {

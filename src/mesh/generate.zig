@@ -1,53 +1,69 @@
 usingnamespace @import("../math.zig");
-const Allocator = @import("std").mem.Allocator;
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const debug = std.debug.warn;
 
 pub const Vertex = Vec3;
 pub const Index = u32;
 
+pub const VertexList = struct {
+    allocator: *Allocator,
+    data: []Vertex,
+
+    pub fn new(allocator: *Allocator) !VertexList {
+        var initialData = try allocator.alloc(Vertex, 0);
+        return VertexList {
+            .data = initialData,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn free(self: *@This(), allocator: *Allocator) void {
+        allocator.free(self.data);
+    }
+
+    pub fn extend(self: *@This(), num: usize) !void {
+        self.data = try self.allocator.realloc(self.data, num + self.data.len);
+    }
+
+};
+
 pub const MeshBuilder = struct {
     allocator: *Allocator,
-    vertices: ?[]Vertex,
+    vertices: VertexList,
     indices: ?[]Index,
 
     pub fn new(allocator: *Allocator) MeshBuilder {
         return MeshBuilder {
             .allocator = allocator,
-            .vertices = null,
+            .vertices = VertexList.new(allocator) catch unreachable,
             .indices = null,
         };
     }
 
     pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        var newVerts = self.allocator.alloc(Vertex, self.prevMesh.vertices.len);
-        for (self.vertices) |vert,i| {
-            newVerts[i] = vert.scale(vec3(x,y,z));
-        }
-        if (self.vertices != null) {
-            self.allocator.free(self.vertices);
+        for (self.vertices.data) |vert,i| {
+            self.vertices.data[i] = vert.scale(vec3(x,y,z));
         }
         self.vertices = newVerts;
         return self;
     }
 
      pub fn rotate(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
-         var newVerts = self.allocator.alloc(Vertex, self.vertices.?.len) catch unreachable;
          var rotMatrix = Mat4.rotate(angle, axis.*);
-             for (self.vertices.?) |vert,i| {
-                 newVerts[i] = vert.applyMatrix(rotMatrix);
-             }
+         for (self.vertices.data) |vert,i| {
+             self.vertices.data[i] = vert.applyMatrix(rotMatrix);
+         }
 
-         self.vertices = newVerts;
          return self;
     }
 
     pub fn create_triangle(self: *MeshBuilder) *MeshBuilder {
         var vertices = self.allocator.alloc(Vertex, 3) catch unreachable;
-        vertices[0] = vec3(0.0, 0.0, 0.0);
-        vertices[1] = vec3(1.0, 0.0, 0.0);
-        vertices[2] = vec3(1.0, 1.0, 0.0);
-        if (self.vertices != null) {
-            self.allocator.free(self.vertices.?);
-        }
+        self.vertices.extend(3) catch unreachable;
+        self.vertices.data[0] = vec3(0.0, 0.0, 0.0);
+        self.vertices.data[1] = vec3(1.0, 0.0, 0.0);
+        self.vertices.data[2] = vec3(1.0, 1.0, 0.0);
 
         var indices = self.allocator.alloc(Index, 3) catch unreachable;
         indices[0] = 0;
@@ -57,19 +73,19 @@ pub const MeshBuilder = struct {
             self.allocator.free(self.indices.?);
         }
 
-        self.vertices = vertices;
         self.indices = indices;
         return self;
     }
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
-        var vertices = self.allocator.alloc(Vertex, self.vertices.?.len + other.vertices.?.len) catch unreachable;
+        self.vertices.extend(other.vertices.data.len) catch unreachable;
         var indices = self.allocator.alloc(Index, self.indices.?.len + other.indices.?.len) catch unreachable;
-        for (self.vertices.?) |vert, i| {
-            vertices[i] = vert;
+        for (self.vertices.data) |vert, i| {
+            self.vertices.data[i] = vert;
         }
-        for (other.vertices.?) |vert, i| {
-            vertices[i + self.vertices.?.len] = vert;
+
+        for (other.vertices.data) |vert, i| {
+            self.vertices.data[i + other.vertices.data.len] = vert;
         }
 
         for (self.indices.?) |index, i| {
@@ -79,19 +95,17 @@ pub const MeshBuilder = struct {
             indices[i + self.indices.?.len] = index + @intCast(Index, self.indices.?.len);
         }
 
-        self.allocator.free(self.vertices.?);
-        other.allocator.free(other.vertices.?);
+        // TODO: Free others vertices?
         self.allocator.free(self.indices.?);
         other.allocator.free(other.indices.?);
 
-        self.vertices = vertices;
         self.indices = indices;
         return self;
     }
 
     pub fn build(self: *MeshBuilder) Mesh {
         return Mesh {
-            .vertices = self.vertices.?,
+            .vertices = self.vertices.data,
             .indices = self.indices.?,
         };
     }
@@ -109,13 +123,9 @@ pub const MeshBuilder = struct {
     }
 
     pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        var newVerts = self.allocator.alloc(Vertex, self.vertices.?.len) catch unreachable;
-        for (self.vertices.?) |vert,i| {
-            newVerts[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
+        for (self.vertices.data) |vert,i| {
+            self.vertices.data[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
         }
-        self.allocator.free(self.vertices.?);
-
-        self.vertices = newVerts;
         return self;
     }
 
@@ -126,7 +136,7 @@ pub const MeshBuilder = struct {
     //     let m1_indices_len = m1.indices.len() as u16;
 
     //     Mesh {
-    //         vertices: [m1.vertices, m2.vertices].concat(),
+    //         vertices [m1.vertices, m2.vertices].concat(),
     //         normals: [m1.normals, m2.normals].concat(),
     //         colors: [m1.colors, m2.colors].concat(),
     //         indices: [
@@ -142,9 +152,9 @@ pub const MeshBuilder = struct {
 
     //  pub fn with_color(self: *Mesh, color: *Vec3) Mesh {
     //     Mesh {
-    //         vertices: self.vertices.iter().cloned().collect(),
+    //         vertices self.vertices.iter().cloned().collect(),
     //         normals: self.normals.iter().cloned().collect(),
-    //         colors: std::vec::from_elem(color.clone(), self.vertices.len()),
+    //         colors: std::vec::from_elem(color.clone(), self.verticeslen()),
     //         indices: self.indices.iter().cloned().collect(),
 
     //    }

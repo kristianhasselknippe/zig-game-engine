@@ -52,12 +52,20 @@ pub const MeshBuilder = struct {
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
         var vertices = self.allocator.alloc(Vertex, self.vertices.?.len + other.vertices.?.len) catch unreachable;
+        for (self.vertices.?) |vert, i| {
+            vertices[i] = vert;
+        }
+        for (other.vertices.?) |vert, i| {
+            vertices[i + self.vertices.?.len] = vert;
+        }
+
         if (self.vertices != null) {
             self.allocator.free(self.vertices.?);
         }
         if (other.vertices != null) {
             other.allocator.free(other.vertices.?);
         }
+
         self.vertices = vertices;
         return self;
     }

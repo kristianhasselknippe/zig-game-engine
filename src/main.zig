@@ -84,7 +84,11 @@ pub fn main() anyerror!void {
     var zoom: f32 = 0.0;
 
     var mesh =
-        MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0)).build();
+        MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0))
+        .combine(
+            MeshBuilder.new(c_allocator).create_triangle()
+        )
+        .build();
     //     .combine(
     //         MeshBuilder.new(c_allocator).create_triangle()
     // ).build();
@@ -98,7 +102,6 @@ pub fn main() anyerror!void {
     vao.bind();
     vao.enable();
 
-
     assertNoError();
 
     var vertex_buffer = ArrayBuffer.create();
@@ -106,7 +109,7 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     var ebo = ElementArrayBuffer.create();
     ebo.bind();
-    var indices = [_]Index{0,1,2};
+    var indices = [_]Index{0,1,2,3,4,5};
     ebo.setData(Index, &indices);
 
     c.glVertexAttribPointer(
@@ -132,7 +135,7 @@ pub fn main() anyerror!void {
         }
 
 
-        drawElements(3);
+        drawElements(6);
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

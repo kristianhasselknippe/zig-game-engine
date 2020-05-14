@@ -97,6 +97,9 @@ pub fn main() anyerror!void {
     for (mesh.vertices) |vert| {
         print("   vert: {},{},{}\n", .{vert.getX(), vert.getY(), vert.getZ()});
     }
+    for (mesh.indices) |index| {
+        print("   index: {}\n", .{ index });
+    }
 
     const vao = VertexArray.create();
     vao.bind();
@@ -109,8 +112,7 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     var ebo = ElementArrayBuffer.create();
     ebo.bind();
-    var indices = [_]Index{0,1,2,3,4,5};
-    ebo.setData(Index, &indices);
+    ebo.setData(Index, mesh.indices);
 
     c.glVertexAttribPointer(
         0,
@@ -135,7 +137,7 @@ pub fn main() anyerror!void {
         }
 
 
-        drawElements(6);
+        drawElements(@intCast(c_int, mesh.indices.len));
 
         const now_time = c.glfwGetTime();
         const elapsed = now_time - prev_time;

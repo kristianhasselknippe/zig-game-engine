@@ -7,11 +7,13 @@ pub const Index = u32;
 pub const MeshBuilder = struct {
     allocator: *Allocator,
     vertices: ?[]Vertex,
+    indices: ?[]Index,
 
     pub fn new(allocator: *Allocator) MeshBuilder {
         return MeshBuilder {
             .allocator = allocator,
             .vertices = null,
+            .indices = null,
         };
     }
 
@@ -46,12 +48,23 @@ pub const MeshBuilder = struct {
         if (self.vertices != null) {
             self.allocator.free(self.vertices.?);
         }
+
+        var indices = self.allocator.alloc(Index, 3) catch unreachable;
+        indices[0] = 0;
+        indices[1] = 1;
+        indices[2] = 2;
+        if (self.indices != null) {
+            self.allocator.free(self.indices.?);
+        }
+
         self.vertices = vertices;
+        self.indices = indices;
         return self;
     }
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
         var vertices = self.allocator.alloc(Vertex, self.vertices.?.len + other.vertices.?.len) catch unreachable;
+        var indices = self.allocator.alloc(Index, self.indices.?.len + other.indices.?.len) catch unreachable;
         for (self.vertices.?) |vert, i| {
             vertices[i] = vert;
         }
@@ -59,20 +72,27 @@ pub const MeshBuilder = struct {
             vertices[i + self.vertices.?.len] = vert;
         }
 
-        if (self.vertices != null) {
-            self.allocator.free(self.vertices.?);
+        for (self.indices.?) |index, i| {
+            indices[i] = index;
         }
-        if (other.vertices != null) {
-            other.allocator.free(other.vertices.?);
+        for (other.indices.?) |index, i| {
+            indices[i + self.indices.?.len] = index + @intCast(Index, self.indices.?.len);
         }
 
+        self.allocator.free(self.vertices.?);
+        other.allocator.free(other.vertices.?);
+        self.allocator.free(self.indices.?);
+        other.allocator.free(other.indices.?);
+
         self.vertices = vertices;
+        self.indices = indices;
         return self;
     }
 
     pub fn build(self: *MeshBuilder) Mesh {
         return Mesh {
-            .vertices = self.vertices.?
+            .vertices = self.vertices.?,
+            .indices = self.indices.?,
         };
     }
 
@@ -167,5 +187,5 @@ pub const MeshBuilder = struct {
 
 const Mesh = struct {
     vertices: []Vertex,
-    //indices: *[]Index,
+    indices: []Index,
 };

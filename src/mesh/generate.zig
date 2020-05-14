@@ -96,30 +96,28 @@ pub const MeshBuilder = struct {
         };
     }
 
-    pub fn rotated_around_x(self: *Mesh, angle: f32) Mesh {
+    pub fn rotated_around_x(self: *Mesh, angle: f32) MeshBiulder {
         self.rotated(angle, &vec3(1.0, 0.0, 0.0));
     }
 
-    pub fn rotated_around_y(self: *Mesh, angle: f32) Mesh {
+    pub fn rotated_around_y(self: *Mesh, angle: f32) MeshBiulder {
         self.rotated(angle, &vec3(0.0, 1.0, 0.0));
     }
 
-    pub fn rotated_around_z(self: *Mesh, angle: f32) Mesh {
+    pub fn rotated_around_z(self: *Mesh, angle: f32) *MeshBuilder {
         self.rotated(angle, &vec3(0.0, 0.0, 1.0));
     }
 
-    //  pub fn translated(self: *Mesh, x: f32, y: f32, z: f32) Mesh {
-    //     Mesh {
-    //         vertices: self
-    //             .vertices
-    //             .iter()
-    //             .map(|v| vec3(v.x + x, v.y + y, v.z + z))
-    //             .collect(),
-    //         normals: self.normals.iter().cloned().collect(),
-    //         colors: self.colors.iter().cloned().collect(),
-    //         indices: self.indices.iter().cloned().collect(),
-    //     }
-    // }
+    pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
+        var newVerts = self.allocator.alloc(Vertex, self.vertices.?.len) catch unreachable;
+        for (self.vertices.?) |vert,i| {
+            newVerts[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
+        }
+        self.allocator.free(self.vertices.?);
+
+        self.vertices = newVerts;
+        return self;
+    }
 
     //  pub fn combine(self: *Mesh, other: *Mesh) Mesh {
     //     let m1 = self.clone();
@@ -188,4 +186,9 @@ pub const MeshBuilder = struct {
 const Mesh = struct {
     vertices: []Vertex,
     indices: []Index,
+
+    pub fn free(self: *Mesh, allocator: *Allocator) void {
+        allocator.free(self.vertices);
+        allocator.free(self.indices);
+    }
 };

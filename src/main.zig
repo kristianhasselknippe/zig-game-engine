@@ -38,6 +38,16 @@ fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
+fn getWindowSize() struct { width: u32, height: u32 } {
+    var width: c_int = 0;
+    var height: c_int = 0;
+    c.glfwGetWindowSize(window, &width, &height);
+    return .{
+        .width = @intCast(u32, width),
+        .height = @intCast(u32, height)
+    };
+}
+
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
 
@@ -83,23 +93,13 @@ pub fn main() anyerror!void {
     var roll: f32 = 0.0;
     var zoom: f32 = 0.0;
 
-    var mesh =
-        MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0))
-        .combine(
-            MeshBuilder.new(c_allocator).create_triangle()
-        )
-        .build();
-    //     .combine(
-    //         MeshBuilder.new(c_allocator).create_triangle()
-    // ).build();
-
-    print("Mesh: {}  \n", .{ mesh });
-    for (mesh.vertices) |vert| {
-        print("   vert: {},{},{}\n", .{vert.getX(), vert.getY(), vert.getZ()});
-    }
-    for (mesh.indices) |index| {
-        print("   index: {}\n", .{ index });
-    }
+    // print("Mesh: {}  \n", .{ mesh });
+    // for (mesh.vertices) |vert| {
+    //     print("   vert: {},{},{}\n", .{vert.getX(), vert.getY(), vert.getZ()});
+    // }
+    // for (mesh.indices) |index| {
+    //     print("   index: {}\n", .{ index });
+    // }
 
     const vao = VertexArray.create();
     vao.bind();
@@ -109,10 +109,8 @@ pub fn main() anyerror!void {
 
     var vertex_buffer = ArrayBuffer.create();
     vertex_buffer.bind();
-    vertex_buffer.setData(Vertex, mesh.vertices);
     var ebo = ElementArrayBuffer.create();
     ebo.bind();
-    ebo.setData(Index, mesh.indices);
 
     c.glVertexAttribPointer(
         0,
@@ -129,7 +127,29 @@ pub fn main() anyerror!void {
     const theImage = PngImage.create(@embedFile("./assets/testimg.png"));
     print("We have loaded an image \n", .{});
 
+    var x: f32 = 0.0;
+    var acc: f32 = 0.0;
+
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
+
+        var windowSize = getWindowSize();
+
+        c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
+
+        x = @cos(acc);
+        acc += 0.01;
+
+        var mesh =
+            MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0))
+            .combine(
+                MeshBuilder.new(c_allocator).create_triangle()
+            )
+            .translated(1.5 * x, 0.5, 0)
+            .build();
+
+        vertex_buffer.setData(Vertex, mesh.vertices);
+        ebo.setData(Index, mesh.indices);
+
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
         if (quitKeyPressed == c.GLFW_PRESS) {
@@ -148,6 +168,8 @@ pub fn main() anyerror!void {
         c.glfwPollEvents();
 
         sleep(10 * 1000 * 1000);
+
+        mesh.free(c_allocator);
     }
 
     defer c.glfwDestroyWindow(window);

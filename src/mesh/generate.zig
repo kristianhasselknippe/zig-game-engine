@@ -6,27 +6,31 @@ const debug = std.debug.warn;
 pub const Vertex = Vec3;
 pub const Index = u32;
 
-pub const VertexList = struct {
-    allocator: *Allocator,
-    data: []Vertex,
+pub fn SimpleList(comptime T: type) type {
+    return struct {
+        allocator: *Allocator,
+        data: []T,
 
-    pub fn new(allocator: *Allocator) !VertexList {
-        var initialData = try allocator.alloc(Vertex, 0);
-        return VertexList {
-            .data = initialData,
-            .allocator = allocator,
-        };
-    }
+        pub fn new(allocator: *Allocator) !VertexList {
+            var initialData = try allocator.alloc(Vertex, 0);
+            return VertexList {
+                .data = initialData,
+                .allocator = allocator,
+            };
+        }
 
-    pub fn free(self: *@This(), allocator: *Allocator) void {
-        allocator.free(self.data);
-    }
+        pub fn free(self: *@This(), allocator: *Allocator) void {
+            allocator.free(self.data);
+        }
 
-    pub fn extend(self: *@This(), num: usize) !void {
-        self.data = try self.allocator.realloc(self.data, num + self.data.len);
-    }
+        pub fn extend(self: *@This(), num: usize) !void {
+            self.data = try self.allocator.realloc(self.data, num + self.data.len);
+        }
 
-};
+    };
+}
+
+const VertexList = SimpleList(Vertex);
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,

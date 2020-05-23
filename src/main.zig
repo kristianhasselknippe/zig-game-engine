@@ -121,18 +121,18 @@ pub fn main() anyerror!void {
     var x: f32 = 0.0;
     var acc: f32 = 0.0;
 
+    var windowSize = getWindowSize();
+
+    c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
+
+    var mesh = MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0, 0.0, 1.0)).combine(MeshBuilder.new(c_allocator).create_triangle()).translated(1.5 * x, 0.5, 0).build();
+
+    vertex_buffer.setData(Vertex, mesh.vertices);
+    ebo.setData(Index, mesh.indices);
+
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
-        var windowSize = getWindowSize();
-
-        c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
-
         x = @cos(acc);
         acc += 0.01;
-
-        var mesh = MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0, 0.0, 1.0)).combine(MeshBuilder.new(c_allocator).create_triangle()).translated(1.5 * x, 0.5, 0).build();
-
-        vertex_buffer.setData(Vertex, mesh.vertices);
-        ebo.setData(Index, mesh.indices);
 
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
         const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
@@ -151,8 +151,6 @@ pub fn main() anyerror!void {
         c.glfwPollEvents();
 
         sleep(10 * 1000 * 1000);
-
-        mesh.free(c_allocator);
     }
 
     defer c.glfwDestroyWindow(window);

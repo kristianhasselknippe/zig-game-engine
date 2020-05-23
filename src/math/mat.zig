@@ -1,3 +1,4 @@
+const std = @import("std");
 usingnamespace @import(("../typeUtils.zig"));
 usingnamespace @import(("./vec.zig"));
 const assert = @import((("std"))).debug.assert;
@@ -16,6 +17,14 @@ pub fn mat4Ortho(left: f32, right: f32, bottom: f32, top: f32) Mat4 {
 
 pub const Mat4 = struct {
     data: [4][4]f32,
+
+    pub fn display(self: *Mat4) void {
+        std.debug.warn("Matrix4x4\n", .{});
+        std.debug.warn("{},{},{},{}\n", .{ self.data[0][0], self.data[1][0], self.data[2][0], self.data[3][0] });
+        std.debug.warn("{},{},{},{}\n", .{ self.data[0][1], self.data[1][1], self.data[2][1], self.data[3][1] });
+        std.debug.warn("{},{},{},{}\n", .{ self.data[0][2], self.data[1][2], self.data[2][2], self.data[3][2] });
+        std.debug.warn("{},{},{},{}\n", .{ self.data[0][3], self.data[1][3], self.data[2][3], self.data[3][3] });
+    }
 
     pub fn identity() Mat4 {
         return Mat4{
@@ -111,7 +120,8 @@ pub const Mat4 = struct {
 
     /// Builds a translation 4 * 4 matrix created from a vector of 3 components.
     /// Input matrix multiplied by this translation matrix.
-    pub fn translate(m: Mat4, x: f32, y: f32, z: f32) Mat4 {
+    pub fn translate(self: *Mat4, x: f32, y: f32, z: f32) Mat4 {
+        var m = self;
         return Mat4{
             .data = [_][4]f32{
                 [_]f32{ m.data[0][0], m.data[0][1], m.data[0][2], m.data[0][3] + m.data[0][0] * x + m.data[0][1] * y + m.data[0][2] * z },

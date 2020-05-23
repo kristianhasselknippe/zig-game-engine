@@ -82,7 +82,7 @@ pub fn main() anyerror!void {
 
     var shouldQuit = false;
 
-    const defaultShader = Shader.createDefaultShader() catch @panic("Unable to create default shader");
+    const shader = Shader.createDefaultShader() catch @panic("Unable to create default shader");
     const projection = Mat4.perspective(1.0, 1, 0.1, 1000);
     //TODO: Make sure we free the perspective matrix
 
@@ -139,6 +139,10 @@ pub fn main() anyerror!void {
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
+
+        var translation_matrix = Mat4.translation(0.5 * x, 0.0, 0.0);
+        translation_matrix.display();
+        shader.setUniform("view", translation_matrix);
 
         drawElements(@intCast(c_int, mesh.indices.len));
 

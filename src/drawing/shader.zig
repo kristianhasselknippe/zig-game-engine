@@ -8,12 +8,12 @@ const Shader = struct {
     handle: c.GLuint,
 
     pub fn init(handle: c.GLuint) @This() {
-        return @This() {
-            .handle = handle
-        };
+        return @This(){ .handle = handle };
     }
 
-    pub fn printShaderInfoLog(shader: Shader, ) !void {
+    pub fn printShaderInfoLog(
+        shader: Shader,
+    ) !void {
         var infologLength: c_int = 0;
         var charsWritten: c_int = 0;
 
@@ -63,22 +63,14 @@ const ShaderProgram = struct {
 
         c.glUseProgram(shaderProgram);
 
-        return @This() {
-            .handle = shaderProgram
-        };
+        return @This(){ .handle = shaderProgram };
     }
 
     pub fn getUniformLocation(program: ShaderProgram, name: [*]const u8) c.GLint {
         return c.glGetUniformLocation(program.handle, name);
     }
 
-    fn setUniformInternal(
-        program: ShaderProgram,
-        name: [*c]const u8,
-        comptime uniformType: UniformTypeId,
-        comptime primitive: UniformPrimitive,
-        val: var
-    ) void { // TODO: Add an error set
+    fn setUniformInternal(program: ShaderProgram, name: [*c]const u8, comptime uniformType: UniformTypeId, comptime primitive: UniformPrimitive, val: var) void { // TODO: Add an error set
         const loc = getUniformLocation(program, name);
         switch (uniformType) {
             .Scalar => {
@@ -108,19 +100,19 @@ const ShaderProgram = struct {
             .Mat2x2 => {
                 switch (primitive) {
                     .Float => c.glProgramUniformMatrix2fv(program.handle, @intCast(c.GLint, loc), 1, c.GL_FALSE, val),
-                    .Int => @compileError("Matrix uniforms only support floats")
+                    .Int => @compileError("Matrix uniforms only support floats"),
                 }
             },
             .Mat3x3 => {
                 switch (primitive) {
                     .Float => c.glProgramUniformMatrix3fv(program.handle, @intCast(c.GLint, loc), 1, c.GL_FALSE, val),
-                    .Int => @compileError("Matrix uniforms only support floats")
+                    .Int => @compileError("Matrix uniforms only support floats"),
                 }
             },
             .Mat4x4 => {
                 switch (primitive) {
                     .Float => c.glProgramUniformMatrix4fv(program.handle, @intCast(c.GLint, loc), 1, c.GL_FALSE, val),
-                    .Int => @compileError("Matrix uniforms only support floats")
+                    .Int => @compileError("Matrix uniforms only support floats"),
                 }
             },
         }
@@ -130,11 +122,9 @@ const ShaderProgram = struct {
         switch (@TypeOf(val)) {
             Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, val.data[0][0..]),
             f32 => setUniformInternal(program, name, UniformTypeId.Scalar, UniformPrimitive.Float, val),
-            else => @compileError("Unsupported uniform type " ++ @typeName(@TypeOf(val)))
+            else => @compileError("Unsupported uniform type " ++ @typeName(@TypeOf(val))),
         }
     }
-
-
 };
 
 pub const UniformTypeId = enum {
@@ -148,8 +138,7 @@ pub const UniformTypeId = enum {
 };
 
 pub const UniformPrimitive = enum {
-    Float,
-    Int
+    Float, Int
 };
 
 pub fn createDefaultShader() !ShaderProgram {

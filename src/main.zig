@@ -44,17 +44,16 @@ fn getWindowSize() struct { width: u32, height: u32 } {
     c.glfwGetWindowSize(window, &width, &height);
     return .{
         .width = @intCast(u32, width),
-        .height = @intCast(u32, height)
+        .height = @intCast(u32, height),
     };
 }
 
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
 
-    const dc =  Drawing.DrawContext {};
+    const dc = Drawing.DrawContext{};
 
     dc.draw();
-
 
     if (c.glfwInit() == c.GL_FALSE) {
         @panic("GLFW init failure\n");
@@ -75,10 +74,8 @@ pub fn main() anyerror!void {
 
     c.glDisable(c.GL_CULL_FACE);
 
-
     //c.glEnable(c.GL_CULL_FACE);
     //c.glCullFace(c.GL_FRONT);
-
 
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
@@ -112,13 +109,7 @@ pub fn main() anyerror!void {
     var ebo = ElementArrayBuffer.create();
     ebo.bind();
 
-    c.glVertexAttribPointer(
-        0,
-        3,
-        c.GL_FLOAT,
-        c.GL_FALSE,
-        0,
-        null);
+    c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 0, null);
 
     assertNoError();
 
@@ -131,7 +122,6 @@ pub fn main() anyerror!void {
     var acc: f32 = 0.0;
 
     while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
-
         var windowSize = getWindowSize();
 
         c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
@@ -139,13 +129,7 @@ pub fn main() anyerror!void {
         x = @cos(acc);
         acc += 0.01;
 
-        var mesh =
-            MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0,0.0,1.0))
-            .combine(
-                MeshBuilder.new(c_allocator).create_triangle()
-            )
-            .translated(1.5 * x, 0.5, 0)
-            .build();
+        var mesh = MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0, 0.0, 1.0)).combine(MeshBuilder.new(c_allocator).create_triangle()).translated(1.5 * x, 0.5, 0).build();
 
         vertex_buffer.setData(Vertex, mesh.vertices);
         ebo.setData(Index, mesh.indices);
@@ -155,7 +139,6 @@ pub fn main() anyerror!void {
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
-
 
         drawElements(@intCast(c_int, mesh.indices.len));
 

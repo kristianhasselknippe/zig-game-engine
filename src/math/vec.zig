@@ -22,7 +22,6 @@ pub const Vec3 = struct {
         return self.data[2];
     }
 
-
     pub fn normalize(v: Vec3) Vec3 {
         return v.scale(1.0 / math.sqrt(v.dot(v)));
     }
@@ -30,11 +29,11 @@ pub const Vec3 = struct {
     pub fn scale(v: Vec3, factor: var) Vec3 {
         switch (@TypeOf(factor)) {
             Vec3 => {
-                return vec3{
-                    v.data[0] * scalar,
-                    v.data[1] * scalar,
-                    v.data[2] * scalar,
-                };
+                return vec3(
+                    v.data[0] * factor.getX(),
+                    v.data[1] * factor.getY(),
+                    v.data[2] * factor.getZ(),
+                );
             },
             else => {
                 switch (@typeInfo(@TypeOf(factor))) {
@@ -105,7 +104,6 @@ pub fn vec3(x: f32, y: f32, z: f32) Vec3 {
 }
 
 pub const Vec4 = struct {
-
     data: [4]f32,
 };
 
@@ -184,7 +182,6 @@ fn testOrtho() void {
 }
 
 fn assertFEq(left: f32, right: f32) void {
-
     const diff = c.fabsf(left - right);
     assert(diff < 0.01);
 }

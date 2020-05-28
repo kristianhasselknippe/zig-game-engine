@@ -95,7 +95,8 @@ pub fn main() anyerror!void {
 
     c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
 
-    var mesh = MeshBuilder.new(c_allocator).create_triangle().rotate(3.14, &vec3(0.0, 0.0, 1.0)).combine(MeshBuilder.new(c_allocator).create_triangle()).translated(1.5 * x, 0.5, 0).build();
+    var mesh = MeshBuilder.new(c_allocator).createSquare().build();
+    mesh.print();
 
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);

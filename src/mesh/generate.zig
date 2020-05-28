@@ -31,17 +31,18 @@ pub fn SimpleList(comptime T: type) type {
 }
 
 const VertexList = SimpleList(Vertex);
+const IndexList = SimpleList(Index);
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,
     vertices: VertexList,
-    indices: ?[]Index,
+    indices: IndexList,
 
     pub fn new(allocator: *Allocator) MeshBuilder {
         return MeshBuilder{
             .allocator = allocator,
             .vertices = VertexList.new(allocator) catch unreachable,
-            .indices = null,
+            .indices = IndexList.new(allocator) catch unreachable,
         };
     }
 
@@ -49,7 +50,6 @@ pub const MeshBuilder = struct {
         for (self.vertices.data) |vert, i| {
             self.vertices.data[i] = vert.scale(vec3(x, y, z));
         }
-        self.vertices = newVerts;
         return self;
     }
 
@@ -58,72 +58,60 @@ pub const MeshBuilder = struct {
         for (self.vertices.data) |vert, i| {
             self.vertices.data[i] = vert.applyMatrix(rotMatrix);
         }
-
         return self;
     }
 
-    pub fn create_triangle(self: *MeshBuilder) *MeshBuilder {
-        var vertices = self.allocator.alloc(Vertex, 3) catch unreachable;
+    pub fn createTriangle(self: *MeshBuilder) *MeshBuilder {
         self.vertices.extend(3) catch unreachable;
         self.vertices.data[0] = vec3(0.0, 0.0, 0.0);
         self.vertices.data[1] = vec3(1.0, 0.0, 0.0);
         self.vertices.data[2] = vec3(1.0, 1.0, 0.0);
 
-        var indices = self.allocator.alloc(Index, 3) catch unreachable;
-        indices[0] = 0;
-        indices[1] = 1;
-        indices[2] = 2;
-        if (self.indices != null) {
-            self.allocator.free(self.indices.?);
-        }
+        self.indices.extend(3) catch unreachable;
+        self.indices.data[0] = 0;
+        self.indices.data[1] = 1;
+        self.indices.data[2] = 2;
 
-        self.indices = indices;
         return self;
     }
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
         self.vertices.extend(other.vertices.data.len) catch unreachable;
-        var indices = self.allocator.alloc(Index, self.indices.?.len + other.indices.?.len) catch unreachable;
         for (self.vertices.data) |vert, i| {
             self.vertices.data[i] = vert;
         }
-
         for (other.vertices.data) |vert, i| {
             self.vertices.data[i + other.vertices.data.len] = vert;
         }
 
-        for (self.indices.?) |index, i| {
-            indices[i] = index;
+        self.indices.extend(other.indices.data.len) catch unreachable;
+        for (self.indices.data) |index, i| {
+            self.indices.data[i] = index;
         }
-        for (other.indices.?) |index, i| {
-            indices[i + self.indices.?.len] = index + @intCast(Index, self.indices.?.len);
+        for (other.indices.data) |index, i| {
+            self.indices.data[i + other.indices.data.len] = index;
         }
 
-        // TODO: Free others vertices?
-        self.allocator.free(self.indices.?);
-        other.allocator.free(other.indices.?);
-
-        self.indices = indices;
         return self;
     }
 
     pub fn build(self: *MeshBuilder) Mesh {
         return Mesh{
             .vertices = self.vertices.data,
-            .indices = self.indices.?,
+            .indices = self.indices.data,
         };
     }
 
-    pub fn rotated_around_x(self: *Mesh, angle: f32) MeshBiulder {
-        self.rotated(angle, &vec3(1.0, 0.0, 0.0));
+    pub fn rotated_around_x(self: *MeshBuilder, angle: f32) *MeshBuilder {
+        return self.rotate(angle, &vec3(1.0, 0.0, 0.0));
     }
 
-    pub fn rotated_around_y(self: *Mesh, angle: f32) MeshBiulder {
-        self.rotated(angle, &vec3(0.0, 1.0, 0.0));
+    pub fn rotated_around_y(self: *MeshBuilder, angle: f32) *MeshBuilder {
+        return self.rotate(angle, &vec3(0.0, 1.0, 0.0));
     }
 
-    pub fn rotated_around_z(self: *Mesh, angle: f32) *MeshBuilder {
-        self.rotated(angle, &vec3(0.0, 0.0, 1.0));
+    pub fn rotated_around_z(self: *MeshBuilder, angle: f32) *MeshBuilder {
+        return self.rotate(angle, &vec3(0.0, 0.0, 1.0));
     }
 
     pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
@@ -133,26 +121,11 @@ pub const MeshBuilder = struct {
         return self;
     }
 
-    //  pub fn combine(self: *Mesh, other: *Mesh) Mesh {
-    //     let m1 = self.clone();
-    //     let m2 = other.clone();
-
-    //     let m1_indices_len = m1.indices.len() as u16;
-
-    //     Mesh {
-    //         vertices [m1.vertices, m2.vertices].concat(),
-    //         normals: [m1.normals, m2.normals].concat(),
-    //         colors: [m1.colors, m2.colors].concat(),
-    //         indices: [
-    //             m1.indices,
-    //             m2.indices
-    //                 .iter()
-    //                 .map(|e| (e + m1_indices_len) as u16)
-    //                 .collect(),
-    //         ]
-    //         .concat(),
-    //     }
-    // }
+    pub fn createSquare(self: *MeshBuilder) *MeshBuilder {
+        var t1 = MeshBuilder.new(self.allocator).createTriangle();
+        var t2 = MeshBuilder.new(self.allocator).createTriangle().rotated_around_z(PI / 2.0).scaled(-1.0, 1.0, 1.0);
+        return t1.combine(t2);
+    }
 
     //  pub fn with_color(self: *Mesh, color: *Vec3) Mesh {
     //     Mesh {
@@ -162,14 +135,6 @@ pub const MeshBuilder = struct {
     //         indices: self.indices.iter().cloned().collect(),
 
     //    }
-    // }
-
-    //  fn create_square(color: *Option<Vec3>) Mesh {
-    //     let t1 = Self::create_triangle(color);
-    //     let t2 = Self::create_triangle(color)
-    //         .rotated_around_z(PI / 2.0)
-    //         .scaled(-1.0, 1.0, 1.0);
-    //     t1.combine(&t2)
     // }
 
     //  fn create_box(color: *Option<Vec3>) Mesh {

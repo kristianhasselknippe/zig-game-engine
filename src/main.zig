@@ -67,19 +67,6 @@ pub fn main() anyerror!void {
 
     const shader = Shader.createDefaultShader() catch @panic("Unable to create default shader");
     const projection = Mat4.perspective(1.0, 1, 0.1, 1000);
-    //TODO: Make sure we free the perspective matrix
-
-    var yaw: f32 = 0.0;
-    var roll: f32 = 0.0;
-    var zoom: f32 = 0.0;
-
-    // print("Mesh: {}  \n", .{ mesh });
-    // for (mesh.vertices) |vert| {
-    //     print("   vert: {},{},{}\n", .{vert.getX(), vert.getY(), vert.getZ()});
-    // }
-    // for (mesh.indices) |index| {
-    //     print("   index: {}\n", .{ index });
-    // }
 
     const vao = VertexArray.create();
     vao.bind();
@@ -113,6 +100,8 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
 
+    var projection_matrix = Mat4.perspective(35.0, 1.0, 0.1, 1000.0);
+
     while (!window.shouldClose() and !shouldQuit) {
         x = @cos(acc);
         acc += 0.01;
@@ -123,8 +112,8 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        var translation_matrix = Mat4.translation(0.5 * x, 0.0, 0.0);
-        translation_matrix.display();
+        var translation_matrix = Mat4.translation(0.5 * x, 0.0, -1.0);
+        shader.setUniform("projection", projection_matrix);
         shader.setUniform("view", translation_matrix);
 
         drawElements(@intCast(c_int, mesh.indices.len));

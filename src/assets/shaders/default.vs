@@ -14,5 +14,5 @@ void main()
 {
 	color = vec4(1.0, 0.0, 0.0, 1.0);
 	//mat4 mvp = projection * view * model;
-	gl_Position =  /*mvp */ view * vec4(pos.x, pos.y, pos.z, 1.0);
+	gl_Position =  /*mvp */ projection * view * vec4(pos.x, pos.y, pos.z, 1.0);
 }

@@ -76,6 +76,7 @@ pub const MeshBuilder = struct {
     }
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
+        const index_len = @intCast(Index, self.indices.data.len);
         self.vertices.extend(other.vertices.data.len) catch unreachable;
         for (self.vertices.data) |vert, i| {
             self.vertices.data[i] = vert;
@@ -89,7 +90,7 @@ pub const MeshBuilder = struct {
             self.indices.data[i] = index;
         }
         for (other.indices.data) |index, i| {
-            self.indices.data[i + other.indices.data.len] = index;
+            self.indices.data[i + other.indices.data.len] = index + index_len;
         }
 
         return self;
@@ -123,7 +124,7 @@ pub const MeshBuilder = struct {
 
     pub fn createSquare(self: *MeshBuilder) *MeshBuilder {
         var t1 = MeshBuilder.new(self.allocator).createTriangle();
-        var t2 = MeshBuilder.new(self.allocator).createTriangle().rotated_around_z(PI / 2.0).scaled(-1.0, 1.0, 1.0);
+        var t2 = MeshBuilder.new(self.allocator).createTriangle().rotated_around_z(PI / 2.0).scaled(1.0, -1.0, 1.0);
         return t1.combine(t2);
     }
 

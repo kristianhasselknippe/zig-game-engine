@@ -95,7 +95,7 @@ pub fn main() anyerror!void {
 
     c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
 
-    var mesh = MeshBuilder.new(c_allocator).createSquare().build();
+    var mesh = MeshBuilder.new().createBox().build();
     mesh.print();
 
     vertex_buffer.setData(Vertex, mesh.vertices);

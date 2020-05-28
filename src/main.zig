@@ -100,8 +100,7 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
 
-    var projection_matrix = Mat4.perspective(35.0, 1.0, 0.1, 1000.0);
-
+    var z_pos: f32 = -1;
     while (!window.shouldClose() and !shouldQuit) {
         x = @cos(acc);
         acc += 0.01;
@@ -112,7 +111,10 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        var translation_matrix = Mat4.translation(0.5 * x, 0.0, -1.0);
+        z_pos = -@fabs(@cos(acc)) * 5;
+
+        var projection_matrix = Mat4.perspective(35.0, 1.0, 0.1, 1000.0);
+        var translation_matrix = Mat4.translation(0.5 * x, 0.0, z_pos);
         shader.setUniform("projection", projection_matrix);
         shader.setUniform("view", translation_matrix);
 

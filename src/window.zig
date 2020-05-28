@@ -4,9 +4,11 @@ pub const Window = struct {
     window_handle: *c.GLFWwindow,
 
     pub fn new(width: i32, height: i32) @This() {
+        c.glfwWindowHint(c.GLFW_SAMPLES, 4);
         const window_handle = c.glfwCreateWindow(width, height, "Game", null, null) orelse {
             @panic("unable to create window\n");
         };
+        c.glEnable(c.GL_MULTISAMPLE);
         return @This(){ .window_handle = window_handle };
     }
 
@@ -20,6 +22,11 @@ pub const Window = struct {
 
     pub fn getQuitKeyPress(self: @This()) i32 {
         return c.glfwGetKey(self.window_handle, c.GLFW_KEY_Q);
+    }
+
+    pub fn getKeyPress(self: @This(), key_code: i32) bool {
+        var state = c.glfwGetKey(self.window_handle, key_code);
+        return state == GLFW_PRESS;
     }
 
     pub fn getWindowSize(self: @This()) struct { width: u32, height: u32 } {

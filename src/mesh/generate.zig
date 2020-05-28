@@ -12,9 +12,9 @@ pub fn SimpleList(comptime T: type) type {
         allocator: *Allocator,
         data: []T,
 
-        pub fn new(allocator: *Allocator) !VertexList {
-            var initialData = try allocator.alloc(Vertex, 0);
-            return VertexList{
+        pub fn new(allocator: *Allocator) !@This() {
+            var initialData = try allocator.alloc(T, 0);
+            return @This(){
                 .data = initialData,
                 .allocator = allocator,
             };

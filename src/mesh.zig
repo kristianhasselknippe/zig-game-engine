@@ -2,7 +2,6 @@ const c = @import("c.zig");
 const print = @import("std").debug.warn;
 usingnamespace @import("math.zig");
 usingnamespace @import("./math/vec.zig");
-usingnamespace @import("drawing/drawing.zig");
 
 pub const Vertex = Vec3;
 pub const Index = u32;

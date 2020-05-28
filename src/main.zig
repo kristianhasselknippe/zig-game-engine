@@ -16,10 +16,9 @@ const Shader = @import("drawing/shader.zig");
 const panic = std.debug.panic;
 const debug = std.debug.warn;
 const sleep = std.time.sleep;
-const Drawing = @import("drawing/drawing.zig");
 const c_allocator = @import("std").heap.c_allocator;
 
-var window: *c.GLFWwindow = undefined;
+var window: Window = undefined;
 const window_width = 900;
 const window_height = 600;
 
@@ -39,22 +38,49 @@ fn initGlOptions() void {
     c.glfwWindowHint(c.GLFW_DOUBLEBUFFER, c.GL_TRUE);
 }
 
-fn getWindowSize() struct { width: u32, height: u32 } {
-    var width: c_int = 0;
-    var height: c_int = 0;
-    c.glfwGetWindowSize(window, &width, &height);
-    return .{
-        .width = @intCast(u32, width),
-        .height = @intCast(u32, height),
-    };
-}
+const Window = struct {
+    window_handle: *c.GLFWwindow,
+
+    pub fn new() @This() {
+        const window_handle = c.glfwCreateWindow(window_width, window_height, "Game", null, null) orelse {
+            @panic("unable to create window\n");
+        };
+        return @This(){ .window_handle = window_handle };
+    }
+
+    pub fn makeContextCurrent(self: @This()) void {
+        c.glfwMakeContextCurrent(self.window_handle);
+    }
+
+    pub fn shouldClose(self: @This()) bool {
+        return c.glfwWindowShouldClose(self.window_handle) == c.GL_TRUE;
+    }
+
+    pub fn getQuitKeyPress(self: @This()) i32 {
+        return c.glfwGetKey(self.window_handle, c.GLFW_KEY_Q);
+    }
+
+    pub fn getWindowSize(self: @This()) struct { width: u32, height: u32 } {
+        var width: c_int = 0;
+        var height: c_int = 0;
+        c.glfwGetWindowSize(self.window_handle, &width, &height);
+        return .{
+            .width = @intCast(u32, width),
+            .height = @intCast(u32, height),
+        };
+    }
+
+    pub fn swapBuffers(self: @This()) void {
+        c.glfwSwapBuffers(self.window_handle);
+    }
+
+    pub fn destroy(self: @This()) void {
+        c.glfwDestroyWindow(self.window_handle);
+    }
+};
 
 pub fn main() anyerror!void {
     _ = c.glfwSetErrorCallback(errorCallback);
-
-    const dc = Drawing.DrawContext{};
-
-    dc.draw();
 
     if (c.glfwInit() == c.GL_FALSE) {
         @panic("GLFW init failure\n");
@@ -63,20 +89,16 @@ pub fn main() anyerror!void {
 
     initGlOptions();
 
-    window = c.glfwCreateWindow(window_width, window_height, "Game", null, null) orelse {
-        @panic("unable to create window\n");
-    };
+    window = Window.new();
+    defer window.destroy();
 
-    c.glfwMakeContextCurrent(window);
+    window.makeContextCurrent();
+
     c.glfwSwapInterval(1);
 
     c.glEnable(c.GL_DEPTH_TEST);
     c.glDepthFunc(c.GL_LESS);
-
     c.glDisable(c.GL_CULL_FACE);
-
-    //c.glEnable(c.GL_CULL_FACE);
-    //c.glCullFace(c.GL_FRONT);
 
     const start_time = c.glfwGetTime();
     var prev_time = start_time;
@@ -122,7 +144,7 @@ pub fn main() anyerror!void {
     var x: f32 = 0.0;
     var acc: f32 = 0.0;
 
-    var windowSize = getWindowSize();
+    var windowSize = window.getWindowSize();
 
     c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
 
@@ -131,12 +153,12 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
 
-    while (c.glfwWindowShouldClose(window) == c.GL_FALSE and !shouldQuit) {
+    while (!window.shouldClose() and !shouldQuit) {
         x = @cos(acc);
         acc += 0.01;
 
         c.glClear(c.GL_COLOR_BUFFER_BIT | c.GL_DEPTH_BUFFER_BIT | c.GL_STENCIL_BUFFER_BIT);
-        const quitKeyPressed = c.glfwGetKey(window, c.GLFW_KEY_Q);
+        const quitKeyPressed = window.getQuitKeyPress();
         if (quitKeyPressed == c.GLFW_PRESS) {
             shouldQuit = true;
         }
@@ -151,12 +173,10 @@ pub fn main() anyerror!void {
         const elapsed = now_time - prev_time;
         prev_time = now_time;
 
-        c.glfwSwapBuffers(window);
+        window.swapBuffers();
 
         c.glfwPollEvents();
 
         sleep(10 * 1000 * 1000);
     }
-
-    defer c.glfwDestroyWindow(window);
 }

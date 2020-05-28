@@ -111,12 +111,14 @@ pub fn main() anyerror!void {
             shouldQuit = true;
         }
 
-        z_pos = -@fabs(@cos(acc)) * 5;
+        z_pos = @cos(acc) * 2;
 
         var projection_matrix = Mat4.perspective(35.0, 1.0, 0.1, 1000.0);
-        var translation_matrix = Mat4.translation(0.5 * x, 0.0, z_pos);
+        var translation_matrix = Mat4.translation(0.5 * x, 0.0, -2);
+        var model_matrix = Mat4.rotate(z_pos, vec3(1.0, 0.0, 0.0));
         shader.setUniform("projection", projection_matrix);
         shader.setUniform("view", translation_matrix);
+        shader.setUniform("model", model_matrix);
 
         drawElements(@intCast(c_int, mesh.indices.len));
 

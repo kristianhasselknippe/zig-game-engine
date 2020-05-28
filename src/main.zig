@@ -1,6 +1,7 @@
 usingnamespace @import("image.zig");
 usingnamespace @import("math.zig");
 usingnamespace @import("math/vec.zig");
+usingnamespace @import("mesh.zig");
 usingnamespace @import("mesh/generate.zig");
 usingnamespace @import("drawing/gl.zig");
 usingnamespace @import("debug_gl.zig");

@@ -1,10 +1,11 @@
 usingnamespace @import("../math.zig");
+const mesh = @import("../mesh.zig");
+const Mesh = mesh.Mesh;
+const Vertex = mesh.Vertex;
+const Index = mesh.Index;
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const debug = std.debug.warn;
-
-pub const Vertex = Vec3;
-pub const Index = u32;
 
 pub fn SimpleList(comptime T: type) type {
     return struct {
@@ -192,24 +193,4 @@ pub const MeshBuilder = struct {
     //         prev.combine(&Mesh::create_square(color).rotated_around_y(angle / 2.0).translated(angle.cos(), 1.0, angle.sin()))
     //     })
     // }
-};
-
-const Mesh = struct {
-    vertices: []Vertex,
-    indices: []Index,
-
-    pub fn free(self: *Mesh, allocator: *Allocator) void {
-        allocator.free(self.vertices);
-        allocator.free(self.indices);
-    }
-
-    pub fn print(self: *Mesh) void {
-        debug("Mesh: {}  \n", .{mesh});
-        for (mesh.vertices) |vert| {
-            debug("   vert: {},{},{}\n", .{ vert.getX(), vert.getY(), vert.getZ() });
-        }
-        for (mesh.indices) |index| {
-            debug("   index: {}\n", .{index});
-        }
-    }
 };

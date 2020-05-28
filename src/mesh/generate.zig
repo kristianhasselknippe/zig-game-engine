@@ -13,7 +13,7 @@ pub fn SimpleList(comptime T: type) type {
 
         pub fn new(allocator: *Allocator) !VertexList {
             var initialData = try allocator.alloc(Vertex, 0);
-            return VertexList {
+            return VertexList{
                 .data = initialData,
                 .allocator = allocator,
             };
@@ -26,7 +26,6 @@ pub fn SimpleList(comptime T: type) type {
         pub fn extend(self: *@This(), num: usize) !void {
             self.data = try self.allocator.realloc(self.data, num + self.data.len);
         }
-
     };
 }
 
@@ -38,7 +37,7 @@ pub const MeshBuilder = struct {
     indices: ?[]Index,
 
     pub fn new(allocator: *Allocator) MeshBuilder {
-        return MeshBuilder {
+        return MeshBuilder{
             .allocator = allocator,
             .vertices = VertexList.new(allocator) catch unreachable,
             .indices = null,
@@ -46,20 +45,20 @@ pub const MeshBuilder = struct {
     }
 
     pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        for (self.vertices.data) |vert,i| {
-            self.vertices.data[i] = vert.scale(vec3(x,y,z));
+        for (self.vertices.data) |vert, i| {
+            self.vertices.data[i] = vert.scale(vec3(x, y, z));
         }
         self.vertices = newVerts;
         return self;
     }
 
-     pub fn rotate(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
-         var rotMatrix = Mat4.rotate(angle, axis.*);
-         for (self.vertices.data) |vert,i| {
-             self.vertices.data[i] = vert.applyMatrix(rotMatrix);
-         }
+    pub fn rotate(self: *MeshBuilder, angle: f32, axis: *Vec3) *MeshBuilder {
+        var rotMatrix = Mat4.rotate(angle, axis.*);
+        for (self.vertices.data) |vert, i| {
+            self.vertices.data[i] = vert.applyMatrix(rotMatrix);
+        }
 
-         return self;
+        return self;
     }
 
     pub fn create_triangle(self: *MeshBuilder) *MeshBuilder {
@@ -108,7 +107,7 @@ pub const MeshBuilder = struct {
     }
 
     pub fn build(self: *MeshBuilder) Mesh {
-        return Mesh {
+        return Mesh{
             .vertices = self.vertices.data,
             .indices = self.indices.?,
         };
@@ -127,7 +126,7 @@ pub const MeshBuilder = struct {
     }
 
     pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        for (self.vertices.data) |vert,i| {
+        for (self.vertices.data) |vert, i| {
             self.vertices.data[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
         }
         return self;
@@ -163,8 +162,6 @@ pub const MeshBuilder = struct {
 
     //    }
     // }
-
-
 
     //  fn create_square(color: *Option<Vec3>) Mesh {
     //     let t1 = Self::create_triangle(color);
@@ -204,5 +201,15 @@ const Mesh = struct {
     pub fn free(self: *Mesh, allocator: *Allocator) void {
         allocator.free(self.vertices);
         allocator.free(self.indices);
+    }
+
+    pub fn print(self: *Mesh) void {
+        debug("Mesh: {}  \n", .{mesh});
+        for (mesh.vertices) |vert| {
+            debug("   vert: {},{},{}\n", .{ vert.getX(), vert.getY(), vert.getZ() });
+        }
+        for (mesh.indices) |index| {
+            debug("   index: {}\n", .{index});
+        }
     }
 };

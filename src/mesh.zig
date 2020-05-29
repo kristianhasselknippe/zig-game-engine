@@ -6,6 +6,7 @@ const debug = @import("std").debug.warn;
 
 pub const Vertex = Vec3;
 pub const Index = u32;
+pub const UV = [2]u32;
 
 pub const Mesh = struct {
     vertices: []Vertex,

@@ -1,12 +1,13 @@
 usingnamespace @import("../math.zig");
+usingnamespace @import("../debug.zig");
 const mesh = @import("../mesh.zig");
 const Mesh = mesh.Mesh;
 const Vertex = mesh.Vertex;
 const Index = mesh.Index;
+const UV = mesh.UV;
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const c_allocator = @import("std").heap.c_allocator;
-const debug = std.debug.warn;
 
 pub fn SimpleList(comptime T: type) type {
     return struct {
@@ -28,22 +29,37 @@ pub fn SimpleList(comptime T: type) type {
         pub fn extend(self: *@This(), num: usize) !void {
             self.data = try self.allocator.realloc(self.data, num + self.data.len);
         }
+
+        pub fn len(self: *@This()) usize {
+            return self.data.len;
+        }
+
+        pub fn combine(self: *@This(), other: *@This(), other_mapper: fn (in: T) T) void {
+            self.extend(other.len()) catch unreachable;
+            const other_len = other.len();
+            for (other.data) |item, i| {
+                self.data[i + other_len] = other_mapper(item);
+            }
+        }
     };
 }
 
 const VertexList = SimpleList(Vertex);
 const IndexList = SimpleList(Index);
+const UVList = SimpleList(UV);
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,
     vertices: VertexList,
     indices: IndexList,
+    uv_coords: UVList,
 
     pub fn new_with_allocator(allocator: *Allocator) MeshBuilder {
         return MeshBuilder{
             .allocator = allocator,
             .vertices = VertexList.new(allocator) catch unreachable,
             .indices = IndexList.new(allocator) catch unreachable,
+            .uv_coords = UVList.new(allocator) catch unreachable,
         };
     }
 
@@ -52,12 +68,12 @@ pub const MeshBuilder = struct {
     }
 
     pub fn display(self: @This(), tag: []const u8) void {
-        debug("MeshBuilder: {} \n", .{tag});
+        debug_log("MeshBuilder: {} ", .{tag});
         for (self.vertices.data) |vert| {
-            debug(" - Vertex: {}\n", .{vert});
+            debug_log(" - Vertex: {}", .{vert});
         }
         for (self.indices.data) |index| {
-            debug(" - Index: {}\n", .{index});
+            debug_log(" - Index: {}", .{index});
         }
     }
 
@@ -70,10 +86,8 @@ pub const MeshBuilder = struct {
 
     pub fn rotate(self: *MeshBuilder, angle: f32, axis: Vec3) *MeshBuilder {
         var rotMatrix = Mat4.rotate(angle, axis);
-        debug("FOOOOOO: {} \n", .{self.vertices.data.len});
 
         for (self.vertices.data) |vert, i| {
-            debug("Rotating vertex {} \n", .{vert});
             self.vertices.data[i] = vert.applyMatrix(rotMatrix);
         }
         return self;
@@ -90,19 +104,23 @@ pub const MeshBuilder = struct {
         self.indices.data[1] = 1;
         self.indices.data[2] = 2;
 
+        self.uv_coords.extend(3) catch unreachable;
+        self.uv_coords.data[0] = [2]u32{ 0.0, 0.0 };
+        self.uv_coords.data[1] = [2]u32{ 1.0, 0.0 };
+        self.uv_coords.data[2] = [2]u32{ 1.0, 1.0 };
+
         return self;
     }
 
-    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
-        const index_len = @intCast(Index, self.indices.data.len);
-        for (self.vertices.data) |vert, i| {
-            self.vertices.data[i] = vert;
-        }
-        self.vertices.extend(other.vertices.data.len) catch unreachable;
-        for (other.vertices.data) |vert, i| {
-            self.vertices.data[i + other.vertices.data.len] = vert;
-        }
+    fn vertexMapper(in: Vertex) Vertex {
+        debug_log("Mapping vert {}", .{in});
+        return in;
+    }
 
+    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
+        self.vertices.combine(&other.vertices, vertexMapper);
+
+        const index_len = @intCast(Index, self.indices.data.len);
         for (self.indices.data) |index, i| {
             self.indices.data[i] = index;
         }
@@ -146,12 +164,14 @@ pub const MeshBuilder = struct {
     }
 
     pub fn createBox(self: *MeshBuilder) *MeshBuilder {
-        var a = self.createSquare().scaled(10.0, 10.0, 10.0);
-        var aa = a.combine(MeshBuilder.new().createSquare().rotated_around_y(PI / 2.0));
+        var a = self.createSquare();
+        var aa = a.combine(MeshBuilder.new().createSquare().translated(1.0, 0.0, 0.0));
+        //var aa = a.combine(MeshBuilder.new().createSquare().rotated_around_y(PI / 2.0));
         var b = aa.combine(MeshBuilder.new().createSquare().rotated_around_x(-PI / 2.0));
         var c = b.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, -1.0));
         var d = c.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, 1.0).rotated_around_y(PI / 2.0));
         var e = d.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, 1.0).rotated_around_x(-PI / 2.0));
+        debug_log("E Length: {} {}", .{ e.vertices.data.len, e.indices.data.len });
         return e;
     }
 

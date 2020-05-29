@@ -34,7 +34,7 @@ pub fn SimpleList(comptime T: type) type {
             return self.data.len;
         }
 
-        pub fn combine(self: *@This(), other: *@This(), other_mapper: fn (in: T) T) void {
+        pub fn append(self: *@This(), other: *@This(), other_mapper: fn (in: T) T) void {
             self.extend(other.len()) catch unreachable;
             const other_len = other.len();
             for (other.data) |item, i| {
@@ -118,7 +118,7 @@ pub const MeshBuilder = struct {
     }
 
     pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
-        self.vertices.combine(&other.vertices, vertexMapper);
+        self.vertices.append(&other.vertices, vertexMapper);
 
         const index_len = @intCast(Index, self.indices.data.len);
         for (self.indices.data) |index, i| {

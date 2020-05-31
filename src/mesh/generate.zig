@@ -6,47 +6,13 @@ const Vertex = mesh.Vertex;
 const Index = mesh.Index;
 const UV = mesh.UV;
 const std = @import("std");
+const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
 const c_allocator = @import("std").heap.c_allocator;
 
-pub fn SimpleList(comptime T: type) type {
-    return struct {
-        allocator: *Allocator,
-        data: []T,
-
-        pub fn new(allocator: *Allocator) !@This() {
-            var initialData = try allocator.alloc(T, 0);
-            return @This(){
-                .data = initialData,
-                .allocator = allocator,
-            };
-        }
-
-        pub fn free(self: *@This(), allocator: *Allocator) void {
-            allocator.free(self.data);
-        }
-
-        pub fn extend(self: *@This(), num: usize) !void {
-            self.data = try self.allocator.realloc(self.data, num + self.data.len);
-        }
-
-        pub fn len(self: *@This()) usize {
-            return self.data.len;
-        }
-
-        pub fn append(self: *@This(), other: *@This(), other_mapper: fn (in: T) T) void {
-            self.extend(other.len()) catch unreachable;
-            const other_len = other.len();
-            for (other.data) |item, i| {
-                self.data[i + other_len] = other_mapper(item);
-            }
-        }
-    };
-}
-
-const VertexList = SimpleList(Vertex);
-const IndexList = SimpleList(Index);
-const UVList = SimpleList(UV);
+const VertexList = ArrayList(Vertex);
+const IndexList = ArrayList(Index);
+const UVList = ArrayList(UV);
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,
@@ -57,9 +23,9 @@ pub const MeshBuilder = struct {
     pub fn new_with_allocator(allocator: *Allocator) MeshBuilder {
         return MeshBuilder{
             .allocator = allocator,
-            .vertices = VertexList.new(allocator) catch unreachable,
-            .indices = IndexList.new(allocator) catch unreachable,
-            .uv_coords = UVList.new(allocator) catch unreachable,
+            .vertices = VertexList.init(allocator),
+            .indices = IndexList.init(allocator),
+            .uv_coords = UVList.init(allocator),
         };
     }
 
@@ -69,17 +35,17 @@ pub const MeshBuilder = struct {
 
     pub fn display(self: @This(), tag: []const u8) void {
         debug_log("MeshBuilder: {} ", .{tag});
-        for (self.vertices.data) |vert| {
+        for (self.vertices.items) |vert| {
             debug_log(" - Vertex: {}", .{vert});
         }
-        for (self.indices.data) |index| {
+        for (self.indices.items) |index| {
             debug_log(" - Index: {}", .{index});
         }
     }
 
     pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        for (self.vertices.data) |vert, i| {
-            self.vertices.data[i] = vert.scale(vec3(x, y, z));
+        for (self.vertices.items) |vert, i| {
+            self.vertices.items[i] = vert.scale(vec3(x, y, z));
         }
         return self;
     }
@@ -87,28 +53,9 @@ pub const MeshBuilder = struct {
     pub fn rotate(self: *MeshBuilder, angle: f32, axis: Vec3) *MeshBuilder {
         var rotMatrix = Mat4.rotate(angle, axis);
 
-        for (self.vertices.data) |vert, i| {
-            self.vertices.data[i] = vert.applyMatrix(rotMatrix);
+        for (self.vertices.items) |vert, i| {
+            self.vertices.items[i] = vert.applyMatrix(rotMatrix);
         }
-        return self;
-    }
-
-    pub fn createTriangle(self: *MeshBuilder) *MeshBuilder {
-        self.vertices.extend(3) catch unreachable;
-        self.vertices.data[0] = vec3(0.0, 0.0, 0.0);
-        self.vertices.data[1] = vec3(1.0, 0.0, 0.0);
-        self.vertices.data[2] = vec3(1.0, 1.0, 0.0);
-
-        self.indices.extend(3) catch unreachable;
-        self.indices.data[0] = 0;
-        self.indices.data[1] = 1;
-        self.indices.data[2] = 2;
-
-        self.uv_coords.extend(3) catch unreachable;
-        self.uv_coords.data[0] = [2]u32{ 0.0, 0.0 };
-        self.uv_coords.data[1] = [2]u32{ 1.0, 0.0 };
-        self.uv_coords.data[2] = [2]u32{ 1.0, 1.0 };
-
         return self;
     }
 
@@ -117,16 +64,33 @@ pub const MeshBuilder = struct {
         return in;
     }
 
-    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
-        self.vertices.append(&other.vertices, vertexMapper);
+    fn uvMapper(in: UV) UV {
+        debug_log("Mapping UV {}", .{in});
+        return in;
+    }
 
-        const index_len = @intCast(Index, self.indices.data.len);
-        for (self.indices.data) |index, i| {
-            self.indices.data[i] = index;
+    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
+        var ret = MeshBuilder.new();
+
+        for (self.vertices.items) |vert| {
+            ret.vertices.append(vert.copy()) catch unreachable;
         }
-        self.indices.extend(other.indices.data.len) catch unreachable;
-        for (other.indices.data) |index, i| {
-            self.indices.data[i + other.indices.data.len] = index + index_len;
+        for (other.vertices.items) |vert| {
+            ret.vertices.append(vert.copy()) catch unreachable;
+        }
+
+        for (self.indices.items) |index| {
+            ret.indices.append(index) catch unreachable;
+        }
+        for (other.indices.items) |index| {
+            ret.indices.append(index + @intCast(u32, self.indices.items.len)) catch unreachable;
+        }
+
+        for (self.uv_coords.items) |uv| {
+            ret.uv_coords.append(uv) catch unreachable;
+        }
+        for (other.uv_coords.items) |uv| {
+            ret.uv_coords.append(uv) catch unreachable;
         }
 
         return self;
@@ -134,8 +98,9 @@ pub const MeshBuilder = struct {
 
     pub fn build(self: *MeshBuilder) Mesh {
         return Mesh{
-            .vertices = self.vertices.data,
-            .indices = self.indices.data,
+            .vertices = self.vertices.items,
+            .indices = self.indices.items,
+            .uv_coords = self.uv_coords.items,
         };
     }
 
@@ -152,26 +117,44 @@ pub const MeshBuilder = struct {
     }
 
     pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
-        for (self.vertices.data) |vert, i| {
-            self.vertices.data[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
+        for (self.vertices.items) |vert, i| {
+            self.vertices.items[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
         }
         return self;
     }
 
-    pub fn createSquare(self: *MeshBuilder) *MeshBuilder {
-        var t2 = MeshBuilder.new().createTriangle().rotated_around_z(PI / 2.0).scaled(1.0, -1.0, 1.0);
-        return self.createTriangle().combine(t2);
+    pub fn createTriangle() MeshBuilder {
+        var self = MeshBuilder.new();
+
+        self.vertices.append(vec3(0.0, 0.0, 0.0)) catch unreachable;
+        self.vertices.append(vec3(1.0, 0.0, 0.0)) catch unreachable;
+        self.vertices.append(vec3(1.0, 1.0, 0.0)) catch unreachable;
+
+        self.indices.append(0) catch unreachable;
+        self.indices.append(1) catch unreachable;
+        self.indices.append(2) catch unreachable;
+
+        self.uv_coords.append([2]u32{ 0.0, 0.0 }) catch unreachable;
+        self.uv_coords.append([2]u32{ 1.0, 0.0 }) catch unreachable;
+        self.uv_coords.append([2]u32{ 1.0, 1.0 }) catch unreachable;
+
+        return self;
     }
 
-    pub fn createBox(self: *MeshBuilder) *MeshBuilder {
-        var a = self.createSquare();
-        var aa = a.combine(MeshBuilder.new().createSquare().translated(1.0, 0.0, 0.0));
+    pub fn createSquare() *MeshBuilder {
+        var t2 = MeshBuilder.createTriangle().rotated_around_z(PI / 2.0).scaled(1.0, -1.0, 1.0);
+        return MeshBuilder.createTriangle().combine(t2);
+    }
+
+    pub fn createBox() *MeshBuilder {
+        var a = MeshBuilder.createSquare();
+        var aa = a.combine(MeshBuilder.createSquare().translated(1.0, 0.0, 0.0));
         //var aa = a.combine(MeshBuilder.new().createSquare().rotated_around_y(PI / 2.0));
-        var b = aa.combine(MeshBuilder.new().createSquare().rotated_around_x(-PI / 2.0));
-        var c = b.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, -1.0));
-        var d = c.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, 1.0).rotated_around_y(PI / 2.0));
-        var e = d.combine(MeshBuilder.new().createSquare().translated(0.0, 0.0, 1.0).rotated_around_x(-PI / 2.0));
-        debug_log("E Length: {} {}", .{ e.vertices.data.len, e.indices.data.len });
+        var b = aa.combine(MeshBuilder.createSquare().rotated_around_x(-PI / 2.0));
+        var c = b.combine(MeshBuilder.createSquare().translated(0.0, 0.0, -1.0));
+        var d = c.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_y(PI / 2.0));
+        var e = d.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_x(-PI / 2.0));
+        debug_log("E Length: {} {}", .{ e.vertices.items.len, e.indices.items.len });
         return e;
     }
 
@@ -196,3 +179,29 @@ pub const MeshBuilder = struct {
     //     })
     // }
 };
+
+const assert = @import("std").debug.assert;
+
+test "append" {
+    var l = ArrayList(i32).init(c_allocator);
+    assert(l.items.len == 0);
+    try l.append(5);
+    assert(l.items.len == 1);
+    try l.append(4);
+    try l.append(3);
+    try l.append(2);
+    assert(l.items.len == 4);
+}
+
+test "combine 1" {
+    var t1 = MeshBuilder.createTriangle();
+    var t2 = MeshBuilder.createTriangle();
+    var combined = t1.combine(&t2);
+    var combinedLength = t1.vertices.items.len + t2.vertices.items.len;
+    debug_log("Combined length {}", .{combinedLength});
+    assert(combined.vertices.items.len == combinedLength);
+
+    for (t1.vertices.items) |vert, i| {
+        assert(vert.equals(combined.vertices.items[i]));
+    }
+}

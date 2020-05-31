@@ -80,6 +80,7 @@ pub fn main() anyerror!void {
     ebo.bind();
 
     c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 0, null);
+    c.glVertexAttribPointer(1, 2, c.GL_FLOAT, c.GL_FALSE, 0, null);
 
     assertNoError();
 
@@ -95,7 +96,7 @@ pub fn main() anyerror!void {
 
     c.glViewport(0, 0, @intCast(c_int, windowSize.width), @intCast(c_int, windowSize.height));
 
-    var mesh = MeshBuilder.new().createBox().build();
+    var mesh = MeshBuilder.createBox().build();
     mesh.print();
 
     vertex_buffer.setData(Vertex, mesh.vertices);

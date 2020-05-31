@@ -10,6 +10,14 @@ pub const Vec2 = struct {
 pub const Vec3 = struct {
     data: [3]f32,
 
+    pub fn equals(self: Vec3, other: Vec3) bool {
+        return self.data[0] == other.data[0] and self.data[1] == other.data[1] and self.data[2] == other.data[2];
+    }
+
+    pub fn copy(self: Vec3) Vec3 {
+        return Vec3{ .data = [3]f32{ self.data[0], self.data[1], self.data[2] } };
+    }
+
     pub fn getX(self: Vec3) f32 {
         return self.data[0];
     }

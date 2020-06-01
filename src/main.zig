@@ -1,4 +1,5 @@
 usingnamespace @import("image.zig");
+usingnamespace @import("debug.zig");
 usingnamespace @import("math.zig");
 usingnamespace @import("math/vec.zig");
 usingnamespace @import("mesh.zig");
@@ -79,8 +80,12 @@ pub fn main() anyerror!void {
     var ebo = ElementArrayBuffer.create();
     ebo.bind();
 
-    c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, 0, null);
-    c.glVertexAttribPointer(1, 2, c.GL_FLOAT, c.GL_FALSE, 0, null);
+    var offsetToUV = @intToPtr(*const c_void, @byteOffsetOf(Vertex, "uv"));
+    debug_log("Offset to uv: {}", .{@ptrToInt(offsetToUV)});
+    c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, @sizeOf(Vertex), null);
+    c.glEnableVertexAttribArray(0);
+    c.glVertexAttribPointer(1, 2, c.GL_FLOAT, c.GL_FALSE, @sizeOf(Vertex), offsetToUV);
+    c.glEnableVertexAttribArray(1);
 
     assertNoError();
 
@@ -99,6 +104,9 @@ pub fn main() anyerror!void {
     var mesh = MeshBuilder.createBox().build();
     mesh.print();
 
+    debug_log("Size of f32: {}", .{@sizeOf(f32)});
+    debug_log("Size ofvertex: {}", .{@sizeOf(Vertex)});
+
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
 
@@ -115,11 +123,11 @@ pub fn main() anyerror!void {
 
         z_pos = @cos(acc) * 2;
 
-        var projection_matrix = Mat4.perspective(35.0, 1.0, 0.1, 1000.0);
-        var translation_matrix = Mat4.translation(0.5 * x, 0.0, -2);
-        var model_matrix = Mat4.rotate(z_pos, vec3(1.0, 0.0, 0.0));
+        var projection_matrix = Mat4.perspective(60.0, 1.0, 0.1, 1000.0);
+        var view_matrix = Mat4.translation(0.5, 0.0, -2);
+        var model_matrix = Mat4.rotate(z_pos, vec3(1.0, z_pos, 0.0)).mult(Mat4.translation(0.0, 0.0, 0.0));
         shader.setUniform("projection", projection_matrix);
-        shader.setUniform("view", translation_matrix);
+        shader.setUniform("view", view_matrix);
         shader.setUniform("model", model_matrix);
 
         drawElements(@intCast(c_int, mesh.indices.len));

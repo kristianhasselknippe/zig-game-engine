@@ -4,7 +4,6 @@ const mesh = @import("../mesh.zig");
 const Mesh = mesh.Mesh;
 const Vertex = mesh.Vertex;
 const Index = mesh.Index;
-const UV = mesh.UV;
 const std = @import("std");
 const ArrayList = std.ArrayList;
 const Allocator = std.mem.Allocator;
@@ -12,20 +11,17 @@ const c_allocator = @import("std").heap.c_allocator;
 
 const VertexList = ArrayList(Vertex);
 const IndexList = ArrayList(Index);
-const UVList = ArrayList(UV);
 
 pub const MeshBuilder = struct {
     allocator: *Allocator,
     vertices: VertexList,
     indices: IndexList,
-    uv_coords: UVList,
 
     pub fn new_with_allocator(allocator: *Allocator) MeshBuilder {
         return MeshBuilder{
             .allocator = allocator,
             .vertices = VertexList.init(allocator),
             .indices = IndexList.init(allocator),
-            .uv_coords = UVList.init(allocator),
         };
     }
 
@@ -45,7 +41,7 @@ pub const MeshBuilder = struct {
 
     pub fn scaled(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
         for (self.vertices.items) |vert, i| {
-            self.vertices.items[i] = vert.scale(vec3(x, y, z));
+            self.vertices.items[i].pos = vert.pos.scale(vec3(x, y, z));
         }
         return self;
     }
@@ -54,7 +50,7 @@ pub const MeshBuilder = struct {
         var rotMatrix = Mat4.rotate(angle, axis);
 
         for (self.vertices.items) |vert, i| {
-            self.vertices.items[i] = vert.applyMatrix(rotMatrix);
+            self.vertices.items[i].pos = vert.pos.applyMatrix(rotMatrix);
         }
         return self;
     }
@@ -86,15 +82,6 @@ pub const MeshBuilder = struct {
             ret.indices.append(index + @intCast(u32, self.indices.items.len)) catch unreachable;
         }
 
-        debug_log("self UV len is: {}", .{self.uv_coords.items.len});
-        debug_log("other UV len is: {}", .{other.uv_coords.items.len});
-        for (self.uv_coords.items) |uv| {
-            ret.uv_coords.append(uv) catch unreachable;
-        }
-        for (other.uv_coords.items) |uv| {
-            ret.uv_coords.append(uv) catch unreachable;
-        }
-
         return ret;
     }
 
@@ -102,7 +89,6 @@ pub const MeshBuilder = struct {
         return Mesh{
             .vertices = self.vertices.items,
             .indices = self.indices.items,
-            .uv_coords = self.uv_coords.items,
         };
     }
 
@@ -120,7 +106,7 @@ pub const MeshBuilder = struct {
 
     pub fn translated(self: *MeshBuilder, x: f32, y: f32, z: f32) *MeshBuilder {
         for (self.vertices.items) |vert, i| {
-            self.vertices.items[i] = vec3(vert.getX() + x, vert.getY() + y, vert.getZ() + z);
+            self.vertices.items[i].pos = vec3(vert.pos.getX() + x, vert.pos.getY() + y, vert.pos.getZ() + z);
         }
         return self;
     }
@@ -128,17 +114,13 @@ pub const MeshBuilder = struct {
     pub fn createTriangle() MeshBuilder {
         var self = MeshBuilder.new();
 
-        self.vertices.append(vec3(0.0, 0.0, 0.0)) catch unreachable;
-        self.vertices.append(vec3(1.0, 0.0, 0.0)) catch unreachable;
-        self.vertices.append(vec3(1.0, 1.0, 0.0)) catch unreachable;
+        self.vertices.append(Vertex.new(vec3(0.0, 0.0, 0.0), [2]f32{ 0.0, 0.0 })) catch unreachable;
+        self.vertices.append(Vertex.new(vec3(1.0, 0.0, 0.0), [2]f32{ 1.0, 0.0 })) catch unreachable;
+        self.vertices.append(Vertex.new(vec3(1.0, 1.0, 0.0), [2]f32{ 1.0, 1.0 })) catch unreachable;
 
         self.indices.append(0) catch unreachable;
         self.indices.append(1) catch unreachable;
         self.indices.append(2) catch unreachable;
-
-        self.uv_coords.append([2]u32{ 0.0, 0.0 }) catch unreachable;
-        self.uv_coords.append([2]u32{ 1.0, 0.0 }) catch unreachable;
-        self.uv_coords.append([2]u32{ 1.0, 1.0 }) catch unreachable;
 
         return self;
     }
@@ -149,26 +131,14 @@ pub const MeshBuilder = struct {
     }
 
     pub fn createBox() MeshBuilder {
-        var a = MeshBuilder.createSquare();
-        var square = MeshBuilder.createSquare().translated(1.0, 0.0, 0.0);
-        var aa = a.combine(square);
-        //var aa = a.combine(MeshBuilder.new().createSquare().rotated_around_y(PI / 2.0));
-        var b = aa.combine(MeshBuilder.createSquare().rotated_around_x(-PI / 2.0));
-        var c = b.combine(MeshBuilder.createSquare().translated(0.0, 0.0, -1.0));
-        var d = c.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_y(PI / 2.0));
-        var e = d.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_x(-PI / 2.0));
-        return e;
+        var front = MeshBuilder.createSquare();
+        var back = MeshBuilder.createSquare().translated(0.0, 0.0, 1.0);
+        var top = MeshBuilder.createSquare().rotated_around_x(-PI / 2.0);
+        var bottom = MeshBuilder.createSquare().translated(0.0, 0.0, -1.0).rotated_around_x(-PI / 2.0);
+        var left = MeshBuilder.createSquare().rotated_around_y(PI / 2.0).translated(1.0, 0.0, 0.0);
+        var right = MeshBuilder.createSquare().rotated_around_y(PI / 2.0);
+        return front.combine(back).combine(top).combine(bottom).combine(left).combine(right);
     }
-
-    //  pub fn with_color(self: *Mesh, color: *Vec3) Mesh {
-    //     Mesh {
-    //         vertices self.vertices.iter().cloned().collect(),
-    //         normals: self.normals.iter().cloned().collect(),
-    //         colors: std::vec::from_elem(color.clone(), self.verticeslen()),
-    //         indices: self.indices.iter().cloned().collect(),
-
-    //    }
-    // }
 
     //  fn create_ring(color: *Option<Vec3>, resolution: u32) Mesh {
     //     let angle_per_segment = PI * 2.0 / (resolution as f32);

@@ -14,9 +14,7 @@ pub const VertexArray = struct {
         var vao: c.GLuint = undefined;
         c.glGenVertexArrays(1, &vao);
 
-        return @This() {
-            .handle = vao
-        };
+        return @This(){ .handle = vao };
     }
 
     pub fn enable(self: @This()) void {
@@ -40,9 +38,7 @@ fn GLBuffer(comptime bufferType: var) type {
         pub fn create() Self {
             var vbo: c.GLuint = undefined;
             c.glGenBuffers(1, &vbo);
-            return Self {
-                .handle = vbo
-            };
+            return Self{ .handle = vbo };
         }
 
         pub fn bind(self: Self) void {
@@ -63,7 +59,9 @@ fn glTypeForZigType(comptime T: type) comptime_int {
     return switch (T) {
         f16, f32, f64 => c.GL_FLOAT,
         i16, i32, i64 => c.GL_INT,
-        else => { @compileError("Type not supported as vertex layout type: " ++ @typeName(T)); }
+        else => {
+            @compileError("Type not supported as vertex layout type: " ++ @typeName(T));
+        },
     };
 }
 
@@ -72,15 +70,15 @@ fn glSizeForZigType(comptime T: type) i32 {
         f16 => 2,
         f32 => 4,
         f64 => 8,
-        else => { @compileError("Type not supported as vertex layout type"); }
+        else => {
+            @compileError("Type not supported as vertex layout type");
+        },
     };
 }
 
 fn numberOfFieldsInStruct(s: builtin.Struct) u32 {
     return s.fields.len;
 }
-
-
 
 const Shape = struct {
     numComponents: usize,
@@ -94,19 +92,19 @@ fn unwrapType(comptime T: type) Shape {
             if (!areAllFieldsSameSize) {
                 @compileError("Expected all fields of a vertex attribute struct to have the same size.");
             }
-            return Shape {
+            return Shape{
                 .numComponents = s.fields.len,
                 .childType = s.fields[0].field_type,
             };
         },
         .Array => |a| {
-            return Shape {
+            return Shape{
                 .numComponents = a.len,
                 .childType = a.child(),
             };
         },
         .Float => |f| {
-            return Shape {
+            return Shape{
                 .numComponents = 1,
                 .childType = switch (f.bits) {
                     16 => f16,
@@ -117,7 +115,7 @@ fn unwrapType(comptime T: type) Shape {
             };
         },
         .Int => |i| {
-            return Shape {
+            return Shape{
                 .numComponents = 1,
                 .childType = switch (f.bits) {
                     16 => i16,
@@ -127,7 +125,7 @@ fn unwrapType(comptime T: type) Shape {
                 },
             };
         },
-        else => @compileError("Unsupported type" ++ @typeName(T))
+        else => @compileError("Unsupported type" ++ @typeName(T)),
     }
 }
 
@@ -149,7 +147,7 @@ test "unwrapTypeTest" {
 pub fn setVertexAttribLayout(comptime T: type) void {
     debug_gl.assertNoError();
     switch (@typeInfo(T)) {
-        .Struct => | *info | {
+        .Struct => |*info| {
             comptime var position: i32 = 0;
             comptime const stride = @sizeOf(T);
             c.glEnableVertexAttribArray(0);
@@ -165,25 +163,18 @@ pub fn setVertexAttribLayout(comptime T: type) void {
                         comptime const shape = unwrapType(T2);
                         comptime const glType = glTypeForZigType(shape.childType);
 
-                        c.glVertexAttribPointer(
-                            position,
-                            shape.numComponents,
-                            glTypeForZigType(shape.childType),
-                            c.GL_FALSE,
-                            stride,
-                            @intToPtr(?*const c_void, @byteOffsetOf(T, field.name))
-                        );
+                        c.glVertexAttribPointer(position, shape.numComponents, glTypeForZigType(shape.childType), c.GL_FALSE, stride, @intToPtr(?*const c_void, @byteOffsetOf(T, field.name)));
                         c.glEnableVertexAttribArray(position);
                         debug_gl.assertNoError();
                     },
                     else => {
                         @compileError("enableVertexAttrib expects a struct type describing the vertex layout.");
-                    }
+                    },
                 }
                 position += 1;
             }
         },
-        else => unreachable
+        else => unreachable,
     }
 }
 

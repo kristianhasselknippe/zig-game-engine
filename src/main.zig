@@ -6,6 +6,7 @@ usingnamespace @import("mesh.zig");
 usingnamespace @import("mesh/generate.zig");
 usingnamespace @import("drawing/gl.zig");
 usingnamespace @import("debug_gl.zig");
+usingnamespace @import("ecs.zig");
 
 const std = @import("std");
 const print = std.debug.warn;
@@ -81,7 +82,6 @@ pub fn main() anyerror!void {
     ebo.bind();
 
     var offsetToUV = @intToPtr(*const c_void, @byteOffsetOf(Vertex, "uv"));
-    debug_log("Offset to uv: {}", .{@ptrToInt(offsetToUV)});
     c.glVertexAttribPointer(0, 3, c.GL_FLOAT, c.GL_FALSE, @sizeOf(Vertex), null);
     c.glEnableVertexAttribArray(0);
     c.glVertexAttribPointer(1, 2, c.GL_FLOAT, c.GL_FALSE, @sizeOf(Vertex), offsetToUV);
@@ -109,6 +109,8 @@ pub fn main() anyerror!void {
 
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
+
+    var world = World.new();
 
     var z_pos: f32 = -1;
     while (!window.shouldClose() and !shouldQuit) {

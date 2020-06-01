@@ -165,15 +165,4 @@ test "append" {
     assert(l.items.len == 4);
 }
 
-test "combine 1" {
-    var t1 = MeshBuilder.createTriangle();
-    var t2 = MeshBuilder.createTriangle();
-    var combined = t1.combine(&t2);
-    var combinedLength = t1.vertices.items.len + t2.vertices.items.len;
-    debug_log("Combined length {}", .{combinedLength});
-    assert(combined.vertices.items.len == combinedLength);
-
-    for (t1.vertices.items) |vert, i| {
-        assert(vert.equals(combined.vertices.items[i]));
-    }
-}
+test "combine 1" {}

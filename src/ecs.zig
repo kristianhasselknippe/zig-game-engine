@@ -5,49 +5,46 @@ const allocator = @import("std").heap.c_allocator;
 const ArrayList = @import("std").ArrayList;
 const StringHashMap = @import("std").StringHashMap;
 
-pub const Component = struct {
-    update: fn (dt: f32) void,
-};
+const ID = i32;
 
-const ComponentStorage = StringHashMap(Component);
+pub fn ComponentStorage(comptime T: type) type {
+    return ArrayList(struct {
+        entity_id: ID,
+        data: T,
+    });
+}
 
+var id_counter: ID = 0;
 pub const Entity = struct {
-    components: ComponentStorage,
+    id: ID,
 
     pub fn new() @This() {
-        return @This(){ .components = ComponentStorage.init(allocator) };
-    }
-
-    pub fn add_comp(self: *@This(), name: []const u8, component: Component) !void {
-        _ = try self.components.put(name, component);
+        var ret = @This(){
+            .id = id_counter
+        };
+        id_counter = id_counter + 1;
+        return ret;
     }
 };
 
 pub const World = struct {
-    components: ArrayList(Component),
-    entities: ArrayList(Entity),
-
+    component_storages: ArrayList(*void),
     pub fn new() World {
         return @This(){
-            .components = ArrayList(Component).init(allocator),
-            .entities = ArrayList(Entity).init(allocator),
+            .component_storages = ArrayList(*void).init(allocator),
         };
     }
 
-    pub fn add_entity(self: *@This(), entity: Entity) !void {
-        try self.entities.append(entity);
+    pub fn add_component_storage(self: *@This(), storageContainer: var) void {
+        self.component_storages.append(@ptrCast(*void, storageContainer));
     }
 };
 
-fn test_comp_update(dt: f32) void {}
+const TestComponent = ArrayList(struct {
+    foo: f32
+});
 
 test "basic world" {
     var world = World.new();
-    var entity = Entity.new();
-    var comp = Component{
-        .update = test_comp_update,
-    };
-    try entity.add_comp("test_comp", comp);
-    debug_log("Entiti comps: {}", .{entity.components.size});
-    assert(entity.components.size == 1);
+    world.add_component_storage(TestComponent.init(allocator));
 }

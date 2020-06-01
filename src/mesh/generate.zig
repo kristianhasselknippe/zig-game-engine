@@ -69,7 +69,7 @@ pub const MeshBuilder = struct {
         return in;
     }
 
-    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) *MeshBuilder {
+    pub fn combine(self: *MeshBuilder, other: *MeshBuilder) MeshBuilder {
         var ret = MeshBuilder.new();
 
         for (self.vertices.items) |vert| {
@@ -86,6 +86,8 @@ pub const MeshBuilder = struct {
             ret.indices.append(index + @intCast(u32, self.indices.items.len)) catch unreachable;
         }
 
+        debug_log("self UV len is: {}", .{self.uv_coords.items.len});
+        debug_log("other UV len is: {}", .{other.uv_coords.items.len});
         for (self.uv_coords.items) |uv| {
             ret.uv_coords.append(uv) catch unreachable;
         }
@@ -93,7 +95,7 @@ pub const MeshBuilder = struct {
             ret.uv_coords.append(uv) catch unreachable;
         }
 
-        return self;
+        return ret;
     }
 
     pub fn build(self: *MeshBuilder) Mesh {
@@ -141,20 +143,20 @@ pub const MeshBuilder = struct {
         return self;
     }
 
-    pub fn createSquare() *MeshBuilder {
+    pub fn createSquare() MeshBuilder {
         var t2 = MeshBuilder.createTriangle().rotated_around_z(PI / 2.0).scaled(1.0, -1.0, 1.0);
         return MeshBuilder.createTriangle().combine(t2);
     }
 
-    pub fn createBox() *MeshBuilder {
+    pub fn createBox() MeshBuilder {
         var a = MeshBuilder.createSquare();
-        var aa = a.combine(MeshBuilder.createSquare().translated(1.0, 0.0, 0.0));
+        var square = MeshBuilder.createSquare().translated(1.0, 0.0, 0.0);
+        var aa = a.combine(square);
         //var aa = a.combine(MeshBuilder.new().createSquare().rotated_around_y(PI / 2.0));
         var b = aa.combine(MeshBuilder.createSquare().rotated_around_x(-PI / 2.0));
         var c = b.combine(MeshBuilder.createSquare().translated(0.0, 0.0, -1.0));
         var d = c.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_y(PI / 2.0));
         var e = d.combine(MeshBuilder.createSquare().translated(0.0, 0.0, 1.0).rotated_around_x(-PI / 2.0));
-        debug_log("E Length: {} {}", .{ e.vertices.items.len, e.indices.items.len });
         return e;
     }
 

@@ -18,12 +18,8 @@ pub const Entity = struct {
         return @This(){ .components = ComponentStorage.init(allocator) };
     }
 
-    pub fn add_comp(self: @This(), name: []const u8, component: Component) !void {
-        var s = @as(Entity, self);
-        debug_log("S len: {}", .{s.components.size});
-        _ = try s.components.put(name, component);
-        debug_log("S len: {}", .{s.components.size});
-        debug_log("O len: {}", .{self.components.size});
+    pub fn add_comp(self: *@This(), name: []const u8, component: Component) !void {
+        _ = try self.components.put(name, component);
     }
 };
 
@@ -38,7 +34,7 @@ pub const World = struct {
         };
     }
 
-    pub fn add_entity(self: @This(), entity: Entity) !void {
+    pub fn add_entity(self: *@This(), entity: Entity) !void {
         try self.entities.append(entity);
     }
 };

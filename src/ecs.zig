@@ -52,7 +52,9 @@ const Box = struct {
 
     pub fn new(data: var) !@This() {
         var ptr = try allocator.create(@TypeOf(data));
+        debug_log("Assigning data to box", .{});
         ptr.* = data;
+        debug_log("done assigning dat to box", .{});
         return @This(){ .data = @ptrCast(*BoxData, ptr) };
     }
 };
@@ -84,7 +86,6 @@ pub const World = struct {
     fn safeGetComponentStorage(self: *@This(), comptime CompType: type) !*ArrayList(CompType) {
         const compName = @typeName(CompType);
         try self.ensureCompStorageExists(CompType);
-        debug_log("\nGetting store by name: {}", .{compName});
         const store = self.componentStorages.get(compName);
         debug_log("Stoer is: {}", .{store});
         return @ptrCast(*ArrayList(CompType), store);
@@ -103,6 +104,11 @@ pub const World = struct {
 
         return newComp;
     }
+
+    pub fn print_debug_info(self: *@This()) void {
+        debug_log("World: ", .{});
+        debug_log(" - Num comp types: {}", .{self.componentStorages.size});
+    }
 };
 
 const TestComp = struct {
@@ -111,6 +117,7 @@ const TestComp = struct {
 
 test "basic world" {
     var world = World.new();
+    world.print_debug_info();
     var entity = try world.createEntity();
     var component = try world.addComponent(entity, TestComp{ .foo = 123 });
 }

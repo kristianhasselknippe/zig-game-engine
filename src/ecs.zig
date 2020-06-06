@@ -55,6 +55,10 @@ const Box = struct {
         ptr.* = data;
         return @This(){ .data = @ptrCast(*BoxData, ptr) };
     }
+
+    pub fn unwrap(self: @This(), comptime T: type) *T {
+        return @ptrCast(*T, @alignCast(@sizeOf(*T), self.data));
+    }
 };
 
 pub const World = struct {
@@ -85,7 +89,7 @@ pub const World = struct {
         const compName = @typeName(CompType);
         try self.ensureCompStorageExists(CompType);
         if (self.componentStorages.getValue(compName)) |store| {
-            return @ptrCast(*ArrayList(CompType), @alignCast(@sizeOf(*ArrayList(CompType)), store.data));
+            return store.unwrap(ArrayList(CompType));
         }
         unreachable;
     }
@@ -104,6 +108,14 @@ pub const World = struct {
     pub fn print_debug_info(self: *@This()) void {
         debug_log("World: ", .{});
         debug_log(" - Num comp types: {}", .{self.componentStorages.size});
+        var it = self.componentStorages.iterator();
+        while (it.next()) |compStorage| {
+            debug_log("    - strage: {}", .{compStorage.key});
+        }
+    }
+
+    pub fn getComponents(self: *@This(), comptime TComp: type) !*ArrayList(Component(TComp)) {
+        return try self.safeGetComponentStorage(Component(TComp));
     }
 };
 
@@ -114,4 +126,26 @@ test "basic world" {
     world.print_debug_info();
     var entity = try world.createEntity();
     var component = try world.addComponent(entity, TestComp{});
+}
+
+const TestComp2 = struct {
+    foobar: i32
+};
+
+test "two comp types" {
+    var world = World.new();
+    var entity = try world.createEntity();
+    var c1 = try world.addComponent(entity, TestComp{});
+    var c2 = try world.addComponent(entity, TestComp2{ .foobar = 123 });
+
+    var c1s = try world.getComponents(TestComp);
+    var c2s = try world.getComponents(TestComp2);
+    world.print_debug_info();
+
+    assert(c1s.items.len == 1);
+    assert(c2s.items.len == 1);
+
+    var c3 = try world.addComponent(entity, TestComp2{ .foobar = 32 });
+    assert(c1s.items.len == 1);
+    assert(c2s.items.len == 2);
 }

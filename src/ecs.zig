@@ -54,7 +54,7 @@ const Box = struct {
         var ptr = try allocator.create(@TypeOf(data));
         debug_log("Assigning data to box", .{});
         ptr.* = data;
-        debug_log("done assigning dat to box", .{});
+        debug_log("done assigning dat to box: {}", .{ptr.items.len});
         return @This(){ .data = @ptrCast(*BoxData, ptr) };
     }
 };
@@ -79,7 +79,9 @@ pub const World = struct {
     fn ensureCompStorageExists(self: *@This(), comptime CompType: type) !void {
         const compName = @typeName(CompType);
         if (!self.componentStorages.contains(compName)) {
-            _ = try self.componentStorages.put(compName, try Box.new(ArrayList(CompType).init(allocator)));
+            var array = ArrayList(CompType).init(allocator);
+            debug_log("Array length: {}", .{array.items.len});
+            _ = try self.componentStorages.put(compName, try Box.new(array));
         }
     }
 

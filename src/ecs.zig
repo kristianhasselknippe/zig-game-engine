@@ -52,9 +52,7 @@ const Box = struct {
 
     pub fn new(data: var) !@This() {
         var ptr = try allocator.create(@TypeOf(data));
-        debug_log("Assigning data to box", .{});
         ptr.* = data;
-        debug_log("done assigning dat to box: {}", .{ptr.items.len});
         return @This(){ .data = @ptrCast(*BoxData, ptr) };
     }
 };
@@ -87,7 +85,6 @@ pub const World = struct {
         const compName = @typeName(CompType);
         try self.ensureCompStorageExists(CompType);
         if (self.componentStorages.getValue(compName)) |store| {
-            debug_log("Store is: {}", .{store});
             return @ptrCast(*ArrayList(CompType), @alignCast(@sizeOf(*ArrayList(CompType)), store.data));
         }
         unreachable;
@@ -98,10 +95,7 @@ pub const World = struct {
         const CompType = Component(CompDataType);
 
         var compStore = try self.safeGetComponentStorage(CompType);
-        debug_log("Comp store: {}", .{compStore});
-
         const newComp = CompType.new(comp, entity);
-        debug_log("new comp: {}", .{newComp});
         _ = try compStore.append(newComp);
 
         return newComp;

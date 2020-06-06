@@ -113,7 +113,7 @@ pub fn main() anyerror!void {
     vertex_buffer.setData(Vertex, mesh.vertices);
     ebo.setData(Index, mesh.indices);
 
-    var world = World.new();
+    //var world = World.new();
 
     var z_pos: f32 = -1;
     while (!window.shouldClose() and !shouldQuit) {

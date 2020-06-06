@@ -7,11 +7,31 @@ const StringHashMap = @import("std").StringHashMap;
 
 const ID = i32;
 
-pub fn ComponentStorage(comptime T: type) type {
-    return ArrayList(struct {
+fn Component(comptime T: type) type {
+    return struct {
         entity_id: ID,
         data: T,
-    });
+
+        pub fn new(data: T, entity: Entity) @This() {
+            return @This(){
+                .entity_id = entity.id,
+                .data = data,
+            };
+        }
+    };
+}
+
+pub fn ComponentStorage(comptime T: type) type {
+    const InstanceList = ArrayList(Component(T));
+
+    return struct {
+        instances: InstanceList,
+
+        pub fn new() @This() {
+            id_counter += 1;
+            return @This(){ .instances = InstanceList.init(allocator) };
+        }
+    };
 }
 
 var id_counter: ID = 0;
@@ -19,32 +39,78 @@ pub const Entity = struct {
     id: ID,
 
     pub fn new() @This() {
-        var ret = @This(){
-            .id = id_counter
-        };
+        var ret = @This(){ .id = id_counter };
         id_counter = id_counter + 1;
         return ret;
     }
 };
 
-pub const World = struct {
-    component_storages: ArrayList(*void),
-    pub fn new() World {
-        return @This(){
-            .component_storages = ArrayList(*void).init(allocator),
-        };
-    }
+const Box = struct {
+    const BoxData = @Type(.Opaque);
 
-    pub fn add_component_storage(self: *@This(), storageContainer: var) void {
-        self.component_storages.append(@ptrCast(*void, storageContainer));
+    data: *BoxData,
+
+    pub fn new(data: var) !@This() {
+        var ptr = try allocator.create(@TypeOf(data));
+        ptr.* = data;
+        return @This(){ .data = @ptrCast(*BoxData, ptr) };
     }
 };
 
-const TestComponent = ArrayList(struct {
+pub const World = struct {
+    entities: ArrayList(Entity),
+    componentStorages: StringHashMap(Box),
+
+    pub fn new() @This() {
+        return @This(){
+            .componentStorages = StringHashMap(Box).init(allocator),
+            .entities = ArrayList(Entity).init(allocator),
+        };
+    }
+
+    pub fn createEntity(self: *@This()) !Entity {
+        var entity = Entity.new();
+        _ = try self.entities.append(entity);
+        return entity;
+    }
+
+    fn ensureCompStorageExists(self: *@This(), comptime CompType: type) !void {
+        const compName = @typeName(CompType);
+        if (!self.componentStorages.contains(compName)) {
+            _ = try self.componentStorages.put(compName, try Box.new(ArrayList(CompType).init(allocator)));
+        }
+    }
+
+    fn safeGetComponentStorage(self: *@This(), comptime CompType: type) !*ArrayList(CompType) {
+        const compName = @typeName(CompType);
+        try self.ensureCompStorageExists(CompType);
+        debug_log("\nGetting store by name: {}", .{compName});
+        const store = self.componentStorages.get(compName);
+        debug_log("Stoer is: {}", .{store});
+        return @ptrCast(*ArrayList(CompType), store);
+    }
+
+    pub fn addComponent(self: *@This(), entity: Entity, comp: var) !Component(@TypeOf(comp)) {
+        const CompDataType = @TypeOf(comp);
+        const CompType = Component(CompDataType);
+
+        var compStore = try self.safeGetComponentStorage(CompType);
+        debug_log("Comp store: {}", .{compStore});
+
+        const newComp = CompType.new(comp, entity);
+        debug_log("new comp: {}", .{newComp});
+        _ = try compStore.append(newComp);
+
+        return newComp;
+    }
+};
+
+const TestComp = struct {
     foo: f32
-});
+};
 
 test "basic world" {
     var world = World.new();
-    world.add_component_storage(TestComponent.init(allocator));
+    var entity = try world.createEntity();
+    var component = try world.addComponent(entity, TestComp{ .foo = 123 });
 }

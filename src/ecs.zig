@@ -79,18 +79,18 @@ pub const World = struct {
     fn ensureCompStorageExists(self: *@This(), comptime CompType: type) !void {
         const compName = @typeName(CompType);
         if (!self.componentStorages.contains(compName)) {
-            var array = ArrayList(CompType).init(allocator);
-            debug_log("Array length: {}", .{array.items.len});
-            _ = try self.componentStorages.put(compName, try Box.new(array));
+            _ = try self.componentStorages.put(compName, try Box.new(ArrayList(CompType).init(allocator)));
         }
     }
 
     fn safeGetComponentStorage(self: *@This(), comptime CompType: type) !*ArrayList(CompType) {
         const compName = @typeName(CompType);
         try self.ensureCompStorageExists(CompType);
-        const store = self.componentStorages.get(compName);
-        debug_log("Stoer is: {}", .{store});
-        return @ptrCast(*ArrayList(CompType), store);
+        if (self.componentStorages.getValue(compName)) |store| {
+            debug_log("Store is: {}", .{store});
+            return @ptrCast(*ArrayList(CompType), @alignCast(@sizeOf(*ArrayList(CompType)), store.data));
+        }
+        unreachable;
     }
 
     pub fn addComponent(self: *@This(), entity: Entity, comp: var) !Component(@TypeOf(comp)) {
@@ -113,13 +113,11 @@ pub const World = struct {
     }
 };
 
-const TestComp = struct {
-    foo: f32
-};
+const TestComp = struct {};
 
 test "basic world" {
     var world = World.new();
     world.print_debug_info();
     var entity = try world.createEntity();
-    var component = try world.addComponent(entity, TestComp{ .foo = 123 });
+    var component = try world.addComponent(entity, TestComp{});
 }

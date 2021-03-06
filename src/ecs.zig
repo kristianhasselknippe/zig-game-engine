@@ -46,7 +46,7 @@ pub const Entity = struct {
 };
 
 const Box = struct {
-    const BoxData = @Type(.Opaque);
+    const BoxData = opaque {};
 
     data: *BoxData,
 
@@ -88,7 +88,7 @@ pub const World = struct {
     fn safeGetComponentStorage(self: *@This(), comptime CompType: type) !*ArrayList(CompType) {
         const compName = @typeName(CompType);
         try self.ensureCompStorageExists(CompType);
-        if (self.componentStorages.getValue(compName)) |store| {
+        if (self.componentStorages.get(compName)) |store| {
             return store.unwrap(ArrayList(CompType));
         }
         unreachable;
@@ -107,10 +107,10 @@ pub const World = struct {
 
     pub fn print_debug_info(self: *@This()) void {
         debug_log("World: ", .{});
-        debug_log(" - Num comp types: {}", .{self.componentStorages.size});
+        debug_log(" - Num comp types: {any}", .{self.componentStorages.count()});
         var it = self.componentStorages.iterator();
         while (it.next()) |compStorage| {
-            debug_log("    - strage: {}", .{compStorage.key});
+            debug_log("    - strage: {any}", .{compStorage.key});
         }
     }
 

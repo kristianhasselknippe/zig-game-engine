@@ -50,7 +50,7 @@ const Box = struct {
 
     data: *BoxData,
 
-    pub fn new(data: var) !@This() {
+    pub fn new(data: anytype) !@This() {
         var ptr = try allocator.create(@TypeOf(data));
         ptr.* = data;
         return @This(){ .data = @ptrCast(*BoxData, ptr) };
@@ -94,7 +94,7 @@ pub const World = struct {
         unreachable;
     }
 
-    pub fn addComponent(self: *@This(), entity: Entity, comp: var) !Component(@TypeOf(comp)) {
+    pub fn addComponent(self: *@This(), entity: Entity, comp: anytype) !Component(@TypeOf(comp)) {
         const CompDataType = @TypeOf(comp);
         const CompType = Component(CompDataType);
 
@@ -128,9 +128,7 @@ test "basic world" {
     var component = try world.addComponent(entity, TestComp{});
 }
 
-const TestComp2 = struct {
-    foobar: i32
-};
+const TestComp2 = struct { foobar: i32 };
 
 test "two comp types" {
     var world = World.new();

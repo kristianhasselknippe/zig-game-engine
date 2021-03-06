@@ -34,7 +34,7 @@ pub const Vec3 = struct {
         return v.scale(1.0 / math.sqrt(v.dot(v)));
     }
 
-    pub fn scale(v: Vec3, factor: var) Vec3 {
+    pub fn scale(v: Vec3, factor: anytype) Vec3 {
         switch (@TypeOf(factor)) {
             Vec3 => {
                 return vec3(

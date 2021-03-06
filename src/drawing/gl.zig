@@ -29,7 +29,7 @@ pub const VertexArray = struct {
     }
 };
 
-fn GLBuffer(comptime bufferType: var) type {
+fn GLBuffer(comptime bufferType: anytype) type {
     return struct {
         handle: c.GLuint,
 

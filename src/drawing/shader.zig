@@ -23,7 +23,7 @@ const Shader = struct {
             var infoLog = try allocator.alloc(u8, @intCast(usize, infologLength));
             c.glGetShaderInfoLog(shader.handle, infologLength, &charsWritten, @ptrCast([*c]u8, &infoLog[0]));
             std.debug.warn("Shader error\n", .{});
-            std.debug.warn("{}\n", .{infoLog});
+            std.debug.warn("{any}\n", .{infoLog});
             allocator.free(infoLog);
         }
     }
@@ -70,7 +70,7 @@ const ShaderProgram = struct {
         return c.glGetUniformLocation(program.handle, name);
     }
 
-    fn setUniformInternal(program: ShaderProgram, name: [*c]const u8, comptime uniformType: UniformTypeId, comptime primitive: UniformPrimitive, val: var) void { // TODO: Add an error set
+    fn setUniformInternal(program: ShaderProgram, name: [*c]const u8, comptime uniformType: UniformTypeId, comptime primitive: UniformPrimitive, val: anytype) void { // TODO: Add an error set
         const loc = getUniformLocation(program, name);
         switch (uniformType) {
             .Scalar => {
@@ -118,7 +118,7 @@ const ShaderProgram = struct {
         }
     }
 
-    pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: var) void {
+    pub fn setUniform(program: ShaderProgram, name: [*c]const u8, val: anytype) void {
         switch (@TypeOf(val)) {
             Mat4 => setUniformInternal(program, name, UniformTypeId.Mat4x4, UniformPrimitive.Float, val.data[0][0..]),
             f32 => setUniformInternal(program, name, UniformTypeId.Scalar, UniformPrimitive.Float, val),
@@ -137,9 +137,7 @@ pub const UniformTypeId = enum {
     Mat4x4,
 };
 
-pub const UniformPrimitive = enum {
-    Float, Int
-};
+pub const UniformPrimitive = enum { Float, Int };
 
 pub fn createDefaultShader() !ShaderProgram {
     const vertexShaderSource = @embedFile("../assets/shaders/default.vs");

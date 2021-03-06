@@ -14,7 +14,7 @@ pub fn ensureAllFieldsHaveTheSameSize(comptime structInfo: builtin.TypeInfo.Stru
     return true;
 }
 
-pub fn assertType(comptime expected: type, val: var) void {
+pub fn assertType(comptime expected: type, val: anytype) void {
     if (expected != typeOf(expected)) {
         compileError("Type assertion failed");
     }

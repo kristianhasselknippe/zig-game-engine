@@ -25,7 +25,7 @@ const window_width = 900;
 const window_height = 600;
 
 fn errorCallback(err: c_int, description: [*c]const u8) callconv(.C) void {
-    panic("Error: {}\n", .{description});
+    panic("Error: {any}\n", .{description});
 }
 
 fn initGlOptions() void {
